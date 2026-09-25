@@ -1,0 +1,765 @@
+#ifndef ESCAPE_H
+#define ESCAPE_H
+
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+
+#define __ESCAPE__
+
+#define ESCAPE_DEBUG
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+
+#pragma region "ESCAPE UTIL"
+
+/* ABOUT `...` */
+
+#if defined(__cplusplus)
+    #if __cplusplus >= 202002L
+        #define ESCAPE_COMPAT_HAS_VA_OPT 1
+    #elif defined(_MSC_VER) && _MSC_VER >= 1925 \
+          && defined(_MSVC_TRADITIONAL) && !_MSVC_TRADITIONAL
+        #define ESCAPE_COMPAT_HAS_VA_OPT 1
+    #elif defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8
+        #define ESCAPE_COMPAT_HAS_VA_OPT 1
+    #elif defined(__clang__) && __clang_major__ >= 12
+        #define ESCAPE_COMPAT_HAS_VA_OPT 1
+    #else
+        #define ESCAPE_COMPAT_HAS_VA_OPT 0
+    #endif
+
+#elif defined(__STDC_VERSION__)
+    #if __STDC_VERSION__ >= 202311L
+        #define ESCAPE_COMPAT_HAS_VA_OPT 1
+    #elif defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8
+        #define ESCAPE_COMPAT_HAS_VA_OPT 1
+    #elif defined(__clang__) && __clang_major__ >= 12
+        #define ESCAPE_COMPAT_HAS_VA_OPT 1
+    #else
+        #define ESCAPE_COMPAT_HAS_VA_OPT 0
+    #endif
+
+#else
+    #define ESCAPE_COMPAT_HAS_VA_OPT 0
+#endif
+
+#if ESCAPE_COMPAT_HAS_VA_OPT
+    /* Standard: expands to ", __VA_ARGS__" if non-empty, otherwise nothing. */
+    #define ESCAPE_COMPAT_COMMA_VA_ARGS(...) __VA_OPT__(,) __VA_ARGS__
+#elif defined(__GNUC__) || defined(__clang__)
+    /* GNU extension: ## removes the preceding comma when empty. */
+    #define ESCAPE_COMPAT_COMMA_VA_ARGS(...) , ##__VA_ARGS__
+#else
+    #error "Neither __VA_OPT__ nor ##__VA_ARGS__ is available. Please upgrade your compiler or provide a fallback."
+#endif
+
+#define ESCAPE_COMMA_VA_ARGS ESCAPE_COMPAT_COMMA_VA_ARGS
+
+/* ABOUT `typeof` */
+
+#if defined(__cplusplus)
+    #if defined(__GNUC__) || defined(__clang__)
+        #define ESCAPE_COMPAT_TYPEOF(...) __typeof__(__VA_ARGS__)
+    #elif defined(_MSC_VER)
+        #define ESCAPE_COMPAT_TYPEOF(...) decltype(__VA_ARGS__)
+    #elif defined(__ESCAPE__)
+        #define ESCAPE_COMPAT_TYPEOF(...) auto
+    #else
+        #error "typeof is unavailable in this C++ compiler. Use an explicit type or an inline function instead."
+    #endif
+
+#else
+    #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
+        #define ESCAPE_COMPAT_TYPEOF(...) typeof(__VA_ARGS__)
+    #elif defined(__GNUC__) || defined(__clang__)
+        #define ESCAPE_COMPAT_TYPEOF(...) __typeof__(__VA_ARGS__)
+    #elif defined(__ESCAPE__)
+        #define ESCAPE_COMPAT_TYPEOF(...) auto
+    #else
+        #error "typeof is unavailable in this C compiler. Use an explicit type or an inline function instead."
+    #endif
+#endif
+
+#define ESCAPE_TYPEOF ESCAPE_COMPAT_TYPEOF
+
+/* ABOUT `#` and `##` */
+
+#define __S(_)  #_
+#define _S(_)   __S(_)
+
+#define __C(_x, _y) _x##_y
+#define _C(_x, _y)  __C(_x, _y)
+
+#define ESCAPE_EMPTY ((void)0)
+
+#define ESCAPE_APPLY(_f, ...) _f(__VA_ARGS__)
+
+/* ABOUT `X` */
+
+#define ESCAPE_X_DISPATCH_I(_1, _2, _3, _4, _5, _6, _7, _8, _x, ...) _x
+#define ESCAPE_X_DISPATCH(...) ESCAPE_X_DISPATCH_I(__VA_ARGS__)
+#define ESCAPE_X_ARG_CNT(...) \
+    ESCAPE_X_DISPATCH(_ ESCAPE_COMMA_VA_ARGS(__VA_ARGS__), 7, 6, 5, 4, 3, 2, 1, 0)
+#define ESCAPE_X(_prefix, ...) \
+    _C(_prefix, ESCAPE_X_ARG_CNT(__VA_ARGS__))(__VA_ARGS__)
+
+/* ABOUT `JOIN` */
+
+#define ESCAPE_JOIN_I(_join_x, ...) _join_x(__VA_ARGS__)
+#define ESCAPE_JOIN(_separator, ...) ESCAPE_JOIN_I(_C(ESCAPE_JOIN_, ESCAPE_X_ARG_CNT(__VA_ARGS__)), _separator ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
+#define ESCAPE_JOIN_0(_separator)                               ""
+#define ESCAPE_JOIN_1(_separator, _1)                           _1
+#define ESCAPE_JOIN_2(_separator, _1, _2)                       _1 _separator _2
+#define ESCAPE_JOIN_3(_separator, _1, _2, _3)                   _1 _separator _2 _separator _3
+#define ESCAPE_JOIN_4(_separator, _1, _2, _3, _4)               _1 _separator _2 _separator _3 _separator _4
+#define ESCAPE_JOIN_5(_separator, _1, _2, _3, _4, _5)           _1 _separator _2 _separator _3 _separator _4 _separator _5
+#define ESCAPE_JOIN_6(_separator, _1, _2, _3, _4, _5, _6)       _1 _separator _2 _separator _3 _separator _4 _separator _5 _separator _6
+#define ESCAPE_JOIN_7(_separator, _1, _2, _3, _4, _5, _6, _7)   _1 _separator _2 _separator _3 _separator _4 _separator _5 _separator _6 _separator _7
+
+#define ESCAPE_JOINS(_separator, ...) ESCAPE_JOIN_I(_C(ESCAPE_JOINS_, ESCAPE_X_ARG_CNT(__VA_ARGS__)), _separator ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
+#define ESCAPE_JOINS_1(_separator, _1)                           _S(_1)
+#define ESCAPE_JOINS_2(_separator, _1, _2)                       _S(_1) _separator _S(_2)
+#define ESCAPE_JOINS_3(_separator, _1, _2, _3)                   _S(_1) _separator _S(_2) _separator _S(_3)
+#define ESCAPE_JOINS_4(_separator, _1, _2, _3, _4)               _S(_1) _separator _S(_2) _separator _S(_3) _separator _S(_4)
+#define ESCAPE_JOINS_5(_separator, _1, _2, _3, _4, _5)           _S(_1) _separator _S(_2) _separator _S(_3) _separator _S(_4) _separator _S(_5)
+#define ESCAPE_JOINS_6(_separator, _1, _2, _3, _4, _5, _6)       _S(_1) _separator _S(_2) _separator _S(_3) _separator _S(_4) _separator _S(_5) _separator _S(_6)
+#define ESCAPE_JOINS_7(_separator, _1, _2, _3, _4, _5, _6, _7)   _S(_1) _separator _S(_2) _separator _S(_3) _separator _S(_4) _separator _S(_5) _separator _S(_6) _separator _S(_7)
+
+/* ABOUT `DECL COPY` */
+
+#define ESCAPE_DECL_COPY(_x, x) ESCAPE_TYPEOF(x) _x = x
+#define ESCAPE_DECL_COPY2(x)    ESCAPE_TYPEOF(x) _##x = x
+
+/* ABOUT `EXPRESSION : WITH RETURN VALUE` */
+
+#define ESCAPE_TO_BOOL(_x) (!!(_x))
+#define ESCAPE_UNSAFE_SIGN_OF(_x) (((_x) > 0) ? 1 : (((_x) < 0) ? -1 : 0))
+#define ESCAPE_SAFE_SIGN_OF(_x) ({ ESCAPE_TYPEOF(_x) _x_ = (_x); _x_ > 0 ? 1 : (_x_ < 0 ? -1 : 0); })
+#define ESCAPE_SIGN_OF_TO(_x, _out) do { ESCAPE_TYPEOF(_x) _x_ = (_x); (_out) = (_x_ > 0 ? 1 : (_x_ < 0 ? -1 : 0)); } while (0)
+#define ESCAPE_SIGN_OF ESCAPE_UNSAFE_SIGN_OF
+
+#define ESCAPE_SELECT(_condition, _then, _else) \
+    ((_condition) ? (_then) : (_else))
+#define ESCAPE_SELECT_TO_BOOL(_condition, _then, _else) \
+    ((_condition) ? (!!(_then)) : (!!(_else)))
+#define ESCAPE_UNSAFE_SELECT_SIGN(_x, _positive, _zero, _negative) \
+    (((_x) > 0) ? (_positive) : (((_x) < 0) ? (_negative) : (_zero)))
+#define ESCAPE_SAFE_SELECT_SIGN(_x, _positive, _zero, _negative) \
+    ({ ESCAPE_TYPEOF(_x) _x_ = (_x); _x_ > 0 ? (_positive) : (_x_ < 0 ? (_negative) : (_zero)); })
+#define ESCAPE_SELECT_SIGN_TO(_x, _positive, _zero, _negative, _out) \
+    do { ESCAPE_TYPEOF(_x) _x_ = (_x); (_out) = (_x_ > 0 ? (_positive) : (_x_ < 0 ? (_negative) : (_zero))); } while (0)
+#define ESCAPE_SELECT_SIGN ESCAPE_UNSAFE_SELECT_SIGN
+
+/* ABOUT `STATEMENT : NO RETURN VALUE` */
+
+#define ESCAPE_IF_DO(_condition, _then) \
+    do { \
+        if (_condition) { \
+            _then; \
+        } \
+    } while (0)
+
+#define ESCAPE_IF_ELSE_DO(_condition, _then, _else) \
+    do { \
+        if (_condition) { \
+            _then; \
+        } else { \
+            _else; \
+        } \
+    } while (0)
+
+#define ESCAPE_UNSAFE_IF_SIGN_DO(_x, _positive, _zero, _negative) \
+    do { \
+        if ((_x) > 0) { \
+            _positive; \
+        } else if ((_x) < 0) { \
+            _negative; \
+        } else { \
+            _zero; \
+        } \
+    } while (0)
+#define ESCAPE_SAFE_IF_SIGN_DO(_x, _positive, _zero, _negative) \
+    do { \
+        ESCAPE_TYPEOF(_x) _x_ = (_x); \
+        if (_x_ > 0) { \
+            _positive; \
+        } else if (_x_ < 0) { \
+            _negative; \
+        } else { \
+            _zero; \
+        } \
+    } while (0)
+#define ESCAPE_IF_SIGN_DO ESCAPE_UNSAFE_IF_SIGN_DO
+
+/* ABOUT `ASSERT` */
+
+#define ESCAPE_ASSERT(_expression) \
+    do { \
+        if (!(_expression)) { \
+            fprintf(stderr, "%s:%d: assert: %s", __FILE__, __LINE__, _S(_expression)); \
+            abort(); \
+        } \
+    } while (0)
+
+/* ABOUT `LOG` */
+
+#define ESCAPE_PRINT_IN(_format, ...)       fprintf(stdin, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
+#define ESCAPE_PRINT_OUT(_format, ...)      fprintf(stdout, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
+#define ESCAPE_PRINT_ERROR(_format, ...)    fprintf(stderr, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
+
+#define ESCAPE_LOG_ERROR(_format, ...) \
+    do { \
+        fprintf(stderr, "%s:%d: error: ", __FILE__, __LINE__); \
+        fprintf(stderr, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__)); \
+        abort(); \
+    } while (0)
+
+#define ESCAPE_LOG_WARNING(_format, ...) \
+    do { \
+        fprintf(stderr, "%s:%d: warning: ", __FILE__, __LINE__); \
+        fprintf(stderr, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__)); \
+    } while (0)
+
+#define ESCAPE_LOG_INFO(_format, ...) \
+    do { \
+        fprintf(stderr, "%s:%d: info: ", __FILE__, __LINE__); \
+        fprintf(stderr, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__)); \
+    } while (0)
+
+#ifdef ESCAPE_DEBUG
+#define ESCAPE_LOG_DEBUG(_format, ...) \
+    do { \
+        fprintf(stderr, "%s:%d: debug: ", __FILE__, __LINE__); \
+        fprintf(stderr, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__)); \
+    } while (0)
+#else
+#define ESCAPE_LOG_DEBUG(_format, ...) ESCAPE_EMPTY
+#endif
+
+#define ESCAPE_LOG_TODO(_format, ...) \
+    do { \
+        fprintf(stderr, "%s:%d: todo: ", __FILE__, __LINE__); \
+        fprintf(stderr, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__)); \
+        abort(); \
+    } while (0)
+
+#define ESCAPE_LOG(_level, _format, ...) \
+    _C(ESCAPE_LOG_, _level)(_format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
+
+/* ABOUT `TODO` */
+
+#define ESCAPE_TODO ESCAPE_LOG_TODO
+
+/* ABOUT `SIMPLE, COMMON` */
+
+#define ESCAPE_UNSAFE_MIN(a, b)         ((a) < (b) ? (a) : (b))
+#define ESCAPE_SAFE_MIN(a, b)           ({ ESCAPE_TYPEOF(a) _a = (a); ESCAPE_TYPEOF(b) _b = (b); _a < _b ? _a : _b; })
+#define ESCAPE_MIN ESCAPE_UNSAFE_MIN
+
+#define ESCAPE_UNSAFE_MAX(a, b)         ((a) > (b) ? (a) : (b))
+#define ESCAPE_SAFE_MAX(a, b)           ({ ESCAPE_TYPEOF(a) _a = (a); ESCAPE_TYPEOF(b) _b = (b); _a > _b ? _a : _b; })
+#define ESCAPE_MAX ESCAPE_UNSAFE_MAX
+
+#define ESCAPE_UNSAFE_CLAMP(x, l, h)    ((x) < (l) ? (l) : ((x) > (h) ? (h) : (x)))
+#define ESCAPE_SAFE_CLAMP(x, l, h)      ({ ESCAPE_TYPEOF(x) _x = (x); ESCAPE_TYPEOF(l) _l = (l); ESCAPE_TYPEOF(h) _h = (h); _x < _l ? _l : (_x > _h ? _h : _x); })
+#define ESCAPE_CLAMP ESCAPE_UNSAFE_CLAMP
+
+#define ESCAPE_UNSAFE_IN_RANGE(x, l, h) (((x) >= (l)) && ((x) <= (h)))
+#define ESCAPE_SAFE_IN_RANGE(x, l, h)   ({ ESCAPE_TYPEOF(x) _x = (x); ESCAPE_TYPEOF(l) _l = (l); ESCAPE_TYPEOF(h) _h = (h); (_x >= _l) && (_x <= _h); })
+#define ESCAPE_IN_RANGE ESCAPE_UNSAFE_IN_RANGE
+
+#define ESCAPE_UNSAFE_ROUND_DIV(a, b)   ((a) >= 0 ? ((((a) + (b)) / 2) / (b)) : ((((a) - (b)) / 2) / (b)))
+#define ESCAPE_SAFE_ROUND_DIV(a, b)     ({ ESCAPE_TYPEOF(a) _a = (a); ESCAPE_TYPEOF(b) _b = (b); _a >= 0 ? (((_a + _b) / 2) / _b) : (((_a - _b) / 2) / _b); })
+#define ESCAPE_ROUND_DIV ESCAPE_UNSAFE_ROUND_DIV
+
+#pragma endregion "ESCAPE UTIL"
+
+
+
+#pragma region "ESCAPE SEQUENCE TYPE (EST)"
+
+#define EST_BLOCK_OFFSET 0x0100
+
+#define ESCAPE_RGB(R, G, B)     R ";" G ";" B
+#define ESCAPE_SRGB(R, G, B)    _S(R) ";" _S(G) ";" _S(B)
+
+#define ESCAPE_JOIN_SEMICOLON_I(...)    ESCAPE_JOIN(__VA_ARGS__)
+#define ESCAPE_JOIN_SEMICOLON(...)      ESCAPE_JOIN_SEMICOLON_I(";" ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
+#define ESCAPE_JOINS_SEMICOLON_I(...)   ESCAPE_JOINS(__VA_ARGS__)
+#define ESCAPE_JOINS_SEMICOLON(...)     ESCAPE_JOINS_SEMICOLON_I(";" ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
+
+enum ESCAPE_SEQUENCE_TYPE_ORDER
+{
+    ESTO_BEGIN,
+
+    ESTO_ESC,
+    ESTO_CSI,
+    ESTO_OSC,
+    ESTO_DCS,
+    ESTO_APC,
+    ESTO_ST,
+    ESTO_SOS,
+    ESTO_PM,
+
+    ESTO_END,
+    ESTO_NUMS = (ESTO_END - 1 - ESTO_BEGIN),
+};
+
+enum ESCAPE_SEQUENCE_TYPE
+{
+    EST_BEGIN,
+
+    EST_ESC = ESTO_ESC * EST_BLOCK_OFFSET,
+    EST_CSI = ESTO_CSI * EST_BLOCK_OFFSET,
+    EST_OSC = ESTO_OSC * EST_BLOCK_OFFSET,
+    EST_DCS = ESTO_DCS * EST_BLOCK_OFFSET,
+    EST_APC = ESTO_APC * EST_BLOCK_OFFSET,
+    EST_ST  = ESTO_ST  * EST_BLOCK_OFFSET,
+    EST_SOS = ESTO_SOS * EST_BLOCK_OFFSET,
+    EST_PM  = ESTO_PM  * EST_BLOCK_OFFSET,
+
+    EST_END,
+    EST_NUMS = ESTO_NUMS
+};
+
+#pragma endregion "ESCAPE SEQUENCE TYPE (EST)"
+
+
+
+#pragma region "ESCAPE BASIC"
+
+#define _ESC_VAL_H      0x1b
+#define _ESC_RAW_H      \x1b
+#define _ESC_CHR_H      '\x1b'
+#define _ESC_STR_H      "\x1b"
+
+#define _ESC_VAL_O      033
+#define _ESC_RAW_O      \033
+#define _ESC_CHR_O      '\033'
+#define _ESC_STR_O      "\033"
+
+#define _ESC_VAL_DEF    _ESC_VAL_H
+#define _ESC_RAW_DEF    _ESC_RAW_H
+#define _ESC_CHR_DEF    _ESC_CHR_H
+#define _ESC_STR_DEF    _ESC_STR_H
+
+#define ESC_ESC(_)      _ESC_STR_DEF _
+
+/* Escape */
+#define INTRODUCER_ESC ESC_ESC("")
+/* Control Sequence Introducer */
+#define INTRODUCER_CSI ESC_ESC("[")
+/* Operating System Command */
+#define INTRODUCER_OSC ESC_ESC("]")
+/* Device Control String */
+#define INTRODUCER_DCS ESC_ESC("P")
+/* Application Program Command */
+#define INTRODUCER_APC ESC_ESC("_")
+/* String Terminal */
+#define INTRODUCER_ST  ESC_ESC("\\")
+/* Start of String */
+#define INTRODUCER_SOS ESC_ESC("X")
+/* Privacy Message */
+#define INTRODUCER_PM  ESC_ESC("^")
+
+/* Escape */
+#define ESC_STR(_I, F)          INTRODUCER_ESC _I F
+#define ESC_NOI_STR(F)          ESC_STR("", F)
+/* Control Sequence Introducer */
+#define CSI_STR(_P, _I, F)      INTRODUCER_CSI _P _I F
+#define CSI_NOP_STR(_I, F)      CSI_STR("", _I, F)
+#define CSI_NOI_STR(_P, F)      CSI_STR(_P, "", F)
+#define CSI_NOPI_STR(F)         CSI_STR("", "", F)
+/* Operating System Command */
+#define OSC_STR(S)              INTRODUCER_OSC S INTRODUCER_ST
+/* Device Control String */
+#define DCS_STR(_P, _I, F, D)   INTRODUCER_DCS _P _I F D INTRODUCER_ST
+#define DCS_NOP_STR(_I, F)      DCS_STR("", _I, F)
+#define DCS_NOI_STR(_P, F)      DCS_STR(_P, "", F)
+#define DCS_NOPI_STR(F)         DCS_STR("", "", F)
+/* Application Program Command */
+#define APC_STR(D)              INTRODUCER_APC D INTRODUCER_ST
+/* String Terminal */
+#define ST_STR()                INTRODUCER_ST
+/* Start of String */
+#define SOS_STR(D)              INTRODUCER_SOS D INTRODUCER_ST
+/* Privacy Message */
+#define PM_STR(D)               INTRODUCER_PM D INTRODUCER_ST
+
+#pragma endregion "ESCAPE BASIC"
+
+
+
+#pragma region "EST CSI"
+
+#pragma region "EST CSI TYPE"
+
+enum EST_CSI_TYPE
+{
+    /* EST CSI BEGIN */
+
+    EST_CSI_BEGIN = EST_CSI,
+
+    /* CURSOR MOVING */
+
+    EST_CSI_CUU,        /* Cursor Up */
+    EST_CSI_CUD,        /* Cursor Down */
+    EST_CSI_CUF,        /* Cursor Forward */
+    EST_CSI_CUB,        /* Cursor Backward */
+    EST_CSI_CNL,        /* Cursor Next Line */
+    EST_CSI_CPL,        /* Cursor Preceding Line */
+    EST_CSI_CHA,        /* Cursor Character Absolute */
+    EST_CSI_CUP,        /* Cursor Position */
+    EST_CSI_HVP,        /* Horizontal Vertical Position */
+    EST_CSI_VPA,        /* Vertical Position Absolute */
+    EST_CSI_CHT,        /* Cursor Forward Tabulation */
+    EST_CSI_CBT,        /* Cursor Backward Tabulation */
+    EST_CSI_SCP,        /* Save Cursor Position */
+    EST_CSI_RCP,        /* Restore Cursor Position */
+    EST_CSI_DECSC,      /* Save Cursor */
+    EST_CSI_DECRC,      /* Restore Cursor */
+
+    /* REASE AND EDIT */
+
+    EST_CSI_ED,         /* Erase in Display */
+    EST_CSI_EL,         /* Erase in Line */
+    EST_CSI_ICH,        /* Insert Blank Characters */
+    EST_CSI_DCH,        /* Delete Characters */
+    EST_CSI_ECH,        /* Erase Characters */
+    EST_CSI_IL,         /* Insert Lines */
+    EST_CSI_DL,         /* Delete Lines */
+    EST_CSI_SU,         /* Scroll Up */
+    EST_CSI_SD,         /* Scroll Down */
+    EST_CSI_REP,        /* Repeat */
+
+    /* TEXT DISPLAY */
+
+    EST_CSI_SGR,        /* Select Graphic Rendition */
+
+    /* SET / RESET MODE */
+
+    EST_CSI_SM,         /* Set Mode */
+    EST_CSI_RM,         /* Reset Mode */
+
+    /* DEVICE STATUS REPORT */
+
+    EST_CSI_DSR,        /* Device Status Report */
+    EST_CSI_CPR,        /* Cursor Position Report */
+    EST_CSI_DA1,        /* Primary Device Attributes */
+    EST_CSI_DA2,        /* Secondary Device Attributes */
+    EST_CSI_XTVERSION,  /* XTerminal Version */
+
+    /* SCROLL REGION AND MARGIN */
+
+    EST_CSI_DECSTBM,    /* Set Top and Bottom Margins */
+    EST_CSI_DECSLRM,    /* Set Left and Right Margins */
+
+    /* TAB(TABULATION) */
+
+    EST_CSI_TBC,        /* Tab Clear */
+    // EST_CSI_CHT,        /* Cursor Forward Tabulation */
+    // EST_CSI_CBT,        /* Cursor Backward Tabulation */
+
+    /* WINDOW OPERATION */
+
+    /* OTHERS */
+
+    EST_CSI_DECSTR,     /* Soft Terminal Reset */
+    EST_CSI_DECSCUSR,   /* Set Cursor Style */
+    EST_CSI_DECSCA,     /* Set Character Attribute */
+    EST_CSI_DECRQM,     /* Request Mode */
+
+    /* EST CSI END */
+
+    EST_CSI_END,
+    
+    /* NUMBER OF CSI SUPPORTED */
+
+    EST_CSI_NUMS = (EST_CSI_END - 1 - EST_CSI_BEGIN)
+};
+
+#pragma endregion "EST CSI TYPE"
+
+#pragma region "EST CSI SGR PARAMS"
+
+/* SGR COMMON ATTRIBUTES */
+
+#define EST_CSI_SGR_RESET               0
+#define EST_CSI_SGR_NORMAL              0
+#define EST_CSI_SGR_BOLD                1
+#define EST_CSI_SGR_INCREASED_INTENSITY 1
+#define EST_CSI_SGR_FAINT               2
+#define EST_CSI_SGR_DECREASED_INTENSITY 2
+#define EST_CSI_SGR_ITALIC              3
+#define EST_CSI_SGR_UNDERLINE           4
+#define EST_CSI_SGR_SLOW_BLINK          5
+#define EST_CSI_SGR_RAPID_BLINK         6
+#define EST_CSI_SGR_REVERSE_VIDEO       7
+#define EST_CSI_SGR_SWAP_FORE_BACK      7
+#define EST_CSI_SGR_HIDE                8
+#define EST_CSI_SGR_CONCEAL             8
+#define EST_CSI_SGR_STRIKE              9
+#define EST_CSI_SGR_CROSSED_OUT         9
+
+#define EST_CSI_SGR_DOUBLY_UNDERLINE        21
+#define EST_CSI_SGR_NOT_BOLD                22
+#define EST_CSI_SGR_NORMAL_INTENSITY        22
+#define EST_CSI_SGR_NOT_ITALIC              23
+#define EST_CSI_SGR_NOT_UNDERLINE           24
+#define EST_CSI_SGR_NOT_BLINKING            25
+#define EST_CSI_SGR_PROPORTIONAL_SPACING    26
+#define EST_CSI_SGR_NOT_REVERSED            27
+#define EST_CSI_SGR_REVEAL                  28
+#define EST_CSI_SGR_NOT_HIDDEN              28
+#define EST_CSI_SGR_NOT_STRIKE              29
+#define EST_CSI_SGR_NOT_CROSSED_OUT         29
+
+/* SGR COLOR */
+
+#define EST_CSI_SGR_FC_BLACK    30
+#define EST_CSI_SGR_FC_RED      31
+#define EST_CSI_SGR_FC_GREEN    32
+#define EST_CSI_SGR_FC_YELLOW   33
+#define EST_CSI_SGR_FC_BLUE     34
+#define EST_CSI_SGR_FC_MAGENTA  35
+#define EST_CSI_SGR_FC_CYAN     36
+#define EST_CSI_SGR_FC_WHITE    37
+#define EST_CSI_SGR_FC_EXT      38
+#define EST_CSI_SGR_FC_DEFAULT  39
+
+#define EST_CSI_SGR_BC_BLACK    40
+#define EST_CSI_SGR_BC_RED      41
+#define EST_CSI_SGR_BC_GREEN    42
+#define EST_CSI_SGR_BC_YELLOW   43
+#define EST_CSI_SGR_BC_BLUE     44
+#define EST_CSI_SGR_BC_MAGENTA  45
+#define EST_CSI_SGR_BC_CYAN     46
+#define EST_CSI_SGR_BC_WHITE    47
+#define EST_CSI_SGR_BC_EXT      48
+#define EST_CSI_SGR_BC_DEFAULT  49
+
+#define EST_CSI_SGR_NOT_PROPORTIONAL_SPACING 50
+
+#define EST_CSI_SGR_UC_EXT      58
+#define EST_CSI_SGR_UC_DEFAULT  59
+
+#define EST_CSI_SGR_BFC_BLACK   90
+#define EST_CSI_SGR_BFC_RED     91
+#define EST_CSI_SGR_BFC_GREEN   92
+#define EST_CSI_SGR_BFC_YELLOW  93
+#define EST_CSI_SGR_BFC_BLUE    94
+#define EST_CSI_SGR_BFC_MAGENTA 95
+#define EST_CSI_SGR_BFC_CYAN    96
+#define EST_CSI_SGR_BFC_WHITE   97
+
+#define EST_CSI_SGR_BBC_BLACK   100
+#define EST_CSI_SGR_BBC_RED     101
+#define EST_CSI_SGR_BBC_GREEN   102
+#define EST_CSI_SGR_BBC_YELLOW  103
+#define EST_CSI_SGR_BBC_BLUE    104
+#define EST_CSI_SGR_BBC_MAGENTA 105
+#define EST_CSI_SGR_BBC_CYAN    106
+#define EST_CSI_SGR_BBC_WHITE   107
+
+#pragma endregion "EST CSI SGR PARAMS"
+
+#pragma region "EST CSI SGR 256 COLORS"
+
+/* STANDARD ANSI COLORS (BY TERMINAL THEME) */
+
+#define EST_CSI_SGR_256_COLOR_BLACK     0
+#define EST_CSI_SGR_256_COLOR_RED       1
+#define EST_CSI_SGR_256_COLOR_GREEN     2
+#define EST_CSI_SGR_256_COLOR_YELLOW    3
+#define EST_CSI_SGR_256_COLOR_BLUE      4
+#define EST_CSI_SGR_256_COLOR_MAGENTA   5
+#define EST_CSI_SGR_256_COLOR_CYAN      6
+#define EST_CSI_SGR_256_COLOR_WHITE     7
+
+/* STANDARD ANSI BRIGHT COLORS (BY TERMINAL THEME) */
+
+#define EST_CSI_SGR_256_COLOR_BBLACK    8
+#define EST_CSI_SGR_256_COLOR_BRED      9
+#define EST_CSI_SGR_256_COLOR_BGREEN    10
+#define EST_CSI_SGR_256_COLOR_BYELLOW   11
+#define EST_CSI_SGR_256_COLOR_BBLUE     12
+#define EST_CSI_SGR_256_COLOR_BMAGENTA  13
+#define EST_CSI_SGR_256_COLOR_BCYAN     14
+#define EST_CSI_SGR_256_COLOR_BWHITE    15
+
+/* 6*6*6 COLOR CUBE */
+
+/* r/g/b LEVEL MAP */
+static const int EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[] = {0, 95, 135, 175, 215, 255};
+
+#define EST_CSI_SGR_256_COLOR_CUBE_INDEX(r, g, b) (16 + 36 * (r) + 6 * (g) + (b))
+#define EST_CSI_SGR_256_COLOR_CUBE_r(index)       (((index) - 16) / 36)
+#define EST_CSI_SGR_256_COLOR_CUBE_g(index)       ((((index) - 16) % 36) / 6)
+#define EST_CSI_SGR_256_COLOR_CUBE_b(index)       (((index) - 16) % 6)
+#define EST_CSI_SGR_256_COLOR_CUBE_R(r)           EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[(r)]
+#define EST_CSI_SGR_256_COLOR_CUBE_G(g)           EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[(g)]
+#define EST_CSI_SGR_256_COLOR_CUBE_B(b)           EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[(b)]
+
+#define EST_CSI_SGR_256_COLOR_CUBE_MIN_LEVEL 0
+#define EST_CSI_SGR_256_COLOR_CUBE_MAX_LEVEL 5
+#define EST_CSI_SGR_256_COLOR_CUBE_MIN_INDEX 16
+#define EST_CSI_SGR_256_COLOR_CUBE_MAX_INDEX 231
+#define EST_CSI_SGR_256_COLOR_CUBE_LEVEL_IN_RANGE(level) ESCAPE_IN_RANGE(level, EST_CSI_SGR_256_COLOR_CUBE_MIN_LEVEL, EST_CSI_SGR_256_COLOR_CUBE_MAX_LEVEL)
+#define EST_CSI_SGR_256_COLOR_CUBE_INDEX_IN_RANGE(index) ESCAPE_IN_RANGE(index, EST_CSI_SGR_256_COLOR_CUBE_MIN_INDEX, EST_CSI_SGR_256_COLOR_CUBE_MAX_INDEX)
+
+/* 24-LEVEL GRAYSCALE */
+
+#define EST_CSI_SGR_256_COLOR_GRAYSCALE_INDEX(v)    ESCAPE_ROUND_DIV(v - 8, 10)
+#define EST_CSI_SGR_256_COLOR_GRAYSCALE_GRAY(index) (8 + 10 * ((index) - 232))
+#define EST_CSI_SGR_256_COLOR_GRAYSCALE_R(index)    EST_CSI_SGR_256_COLOR_GRAYSCALE_GRAY(index)
+#define EST_CSI_SGR_256_COLOR_GRAYSCALE_G(index)    EST_CSI_SGR_256_COLOR_GRAYSCALE_GRAY(index)
+#define EST_CSI_SGR_256_COLOR_GRAYSCALE_B(index)    EST_CSI_SGR_256_COLOR_GRAYSCALE_GRAY(index)
+
+#define EST_CSI_SGR_256_COLOR_GRAYSCALE_MIN_I       0
+#define EST_CSI_SGR_256_COLOR_GRAYSCALE_MAX_I       23
+#define EST_CSI_SGR_256_COLOR_GRAYSCALE_MIN_INDEX   232
+#define EST_CSI_SGR_256_COLOR_GRAYSCALE_MAX_INDEX   255
+#define EST_CSI_SGR_256_COLOR_GRAYSCALE_I_IN_RANGE(i)           ESCAPE_IN_RANGE(i, EST_CSI_SGR_256_COLOR_GRAYSCALE_MIN_I, EST_CSI_SGR_256_COLOR_GRAYSCALE_MAX_I)
+#define EST_CSI_SGR_256_COLOR_GRAYSCALE_INDEX_IN_RANGE(index)   ESCAPE_IN_RANGE(index, EST_CSI_SGR_256_COLOR_GRAYSCALE_MIN_INDEX, EST_CSI_SGR_256_COLOR_GRAYSCALE_MAX_INDEX)
+
+#pragma endregion "EST CSI SGR 256 COLORS"
+
+#pragma region "EST CSI FINAL STRING"
+
+#define CSI_CUU_FS      "A"
+#define CSI_CUD_FS      "B"
+#define CSI_CUF_FS      "C"
+#define CSI_CUB_FS      "D"
+#define CSI_CNL_FS      "E"
+#define CSI_CPL_FS      "F"
+#define CSI_CHA_FS      "G"
+#define CSI_CUP_FS      "H"
+#define CSI_HVP_FS      "f"
+#define CSI_VPA_FS      "d"
+#define CSI_CHT_FS      "I"
+#define CSI_CBT_FS      "Z"
+#define CSI_SCP_FS      "s"
+#define CSI_RCP_FS      "u"
+#define CSI_DECSC_FS    "7"
+#define CSI_DECRC_FS    "8"
+
+#define CSI_ED_FS       "J"
+#define CSI_EL_FS       "K"
+#define CSI_ICH_FS      "@"
+#define CSI_DCH_FS      "P"
+#define CSI_ECH_FS      "X"
+#define CSI_IL_FS       "L"
+#define CSI_DL_FS       "M"
+#define CSI_SU_FS       "S"
+#define CSI_SD_FS       "T"
+#define CSI_REP_FS      "b"
+
+#define CSI_SGR_FS      "m"
+
+#define CSI_DSR_FS      "n"
+#define CSI_CPR_FS      "n"
+#define CSI_DA1_FS      "c"
+#define CSI_DA2_FS      "c"
+
+#define CSI_DECSTBM_FS  "r"
+#define CSI_DECSLRM_FS  "s"
+
+#define CSI_TBC_FS      "g"
+// #define CSI_CHT_FS      "I"
+// #define CSI_CBT_FS      "Z"
+
+#define CSI_DECSTR_FS   "p"
+#define CSI_DECSCUSR_FS "q"
+#define CSI_DECSCA_FS   "q"
+#define CSI_DECRQM_FS   "p"
+
+#pragma endregion "EST CSI SGR PARAMS"
+
+#pragma region "EST CSI STRING"
+
+#define CSI_CUU_STR(n)      CSI_NOI_STR(n, CSI_CUU_FS)
+#define CSI_CUD_STR(n)      CSI_NOI_STR(n, CSI_CUD_FS)
+#define CSI_CUF_STR(n)      CSI_NOI_STR(n, CSI_CUF_FS)
+#define CSI_CUB_STR(n)      CSI_NOI_STR(n, CSI_CUB_FS)
+#define CSI_CNL_STR(n)      CSI_NOI_STR(n, CSI_CNL_FS)
+#define CSI_CPL_STR(n)      CSI_NOI_STR(n, CSI_CPL_FS)
+#define CSI_CHA_STR(n)      CSI_NOI_STR(n, CSI_CHA_FS)
+#define CSI_CUP_STR(rc)     CSI_NOI_STR(rc, CSI_CUP_FS)
+#define CSI_HVP_STR(rc)     CSI_NOI_STR(rc, CSI_HVP_FS)
+#define CSI_VPA_STR(n)      CSI_NOI_STR(n, CSI_VPA_FS)
+#define CSI_CHT_STR(n)      CSI_NOI_STR(n, CSI_CHT_FS)
+#define CSI_CBT_STR(n)      CSI_NOI_STR(n, CSI_CBT_FS)
+#define CSI_SCP_STR()       CSI_NOPI_STR(CSI_SCP_FS)
+#define CSI_RCP_STR()       CSI_NOPI_STR(CSI_RCP_FS)
+#define CSI_DECSC_STR()     ESC_NOI_STR(CSI_DECSC_FS)
+#define CSI_DECRC_STR()     ESC_NOI_STR(CSI_DECRC_FS)
+
+/**
+ * - m: 0 (default). Erase from the cursor position to the end of the screen, including the cursor position.
+ * - m: 1. Erase from the beginning of the screen to the cursor position, including the cursor position.
+ * - m: 2. Erase the entire screen.
+ * - m: 3. Erase scrollback buffer, an xterm extension, not supported by all terminals.
+ */
+#define CSI_ED_STR(m)       CSI_NOI_STR(m, CSI_ED_FS)
+/**
+ * - m: 0 (default). Erase from the cursor position to the end of the line, including the cursor position.
+ * - m: 1. Erase from the beginning of the line to the cursor position, including the cursor.
+ * - m: 2. Erase entire line.
+ */
+#define CSI_EL_STR(m)       CSI_NOI_STR(m, CSI_EL_FS)
+#define CSI_ICH_STR(n)      CSI_NOI_STR(n, CSI_ICH_FS)
+#define CSI_DCH_STR(n)      CSI_NOI_STR(n, CSI_DCH_FS)
+#define CSI_ECH_STR(n)      CSI_NOI_STR(n, CSI_ECH_FS)
+#define CSI_IL_STR(n)       CSI_NOI_STR(n, CSI_IL_FS)
+#define CSI_DL_STR(n)       CSI_NOI_STR(n, CSI_DL_FS)
+#define CSI_SU_STR(n)       CSI_NOI_STR(n, CSI_SU_FS)
+#define CSI_SD_STR(n)       CSI_NOI_STR(n, CSI_SD_FS)
+#define CSI_REP_STR(n)      CSI_NOI_STR(n, CSI_REP_FS)
+
+#define CSI_SGR_STR(_P)     CSI_NOI_STR(_P, CSI_SGR_FS)
+#define CSI_SGR_SSTR(_P)    CSI_SGR_STR(_S(_P))
+#define CSI_SGR_COLOR_EXT_STR(m1, m2, c)    CSI_NOI_STR(m1 ";" m2 ";" c, CSI_SGR_FS)
+#define CSI_SGR_TRUE_COLOR_EXT_STR(m, rgb)  CSI_SGR_COLOR_EXT_STR(m, "2", rgb)
+#define CSI_SGR_256_COLOR_EXT_STR(m, n)     CSI_SGR_COLOR_EXT_STR(m, "5", n)
+#define CSI_SGR_FC_EXT_TRUE_STR(rgb)        CSI_SGR_TRUE_COLOR_EXT_STR(_S(EST_CSI_SGR_FC_EXT), rgb)
+#define CSI_SGR_BC_EXT_TRUE_STR(rgb)        CSI_SGR_TRUE_COLOR_EXT_STR(_S(EST_CSI_SGR_BC_EXT), rgb)
+#define CSI_SGR_FC_EXT_256_STR(n)           CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_FC_EXT), n)
+#define CSI_SGR_BC_EXT_256_STR(n)           CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_BC_EXT), n)
+#define CSI_SGR_UC_EXT_TRUE_STR(rgb)        CSI_SGR_TRUE_COLOR_EXT_STR(_S(EST_CSI_SGR_UC_EXT), rgb)
+#define CSI_SGR_UC_EXT_256_STR(n)           CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_UC_EXT), n)
+
+
+#define CSI_SGR_FC_EXT_256_SSTR(n)          CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_FC_EXT), _S(n))
+#define CSI_SGR_BC_EXT_256_SSTR(n)          CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_BC_EXT), _S(n))
+#define CSI_SGR_UC_EXT_256_SSTR(n)          CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_UC_EXT), _S(n))
+
+#pragma endregion "EST CSI STRING"
+
+#pragma endregion "EST CSI"
+
+
+
+#pragma region "ESCAPE FUNCTION"
+
+#pragma region "ESCAPE COLOR"
+
+// #define ESCAPE_COLORIZE(text, fg, bg, ) CSI_SGR_SSTR(fg) CSI_SGR_SSTR(bg) text CSI_SGR_SSTR(EST_CSI_SGR_RESET)
+
+#pragma endregion "ESCAPE COLOR"
+
+#pragma endregion "ESCAPE FUNCTION"
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* ESCAPE_H */
