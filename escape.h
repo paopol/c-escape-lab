@@ -7,10 +7,27 @@
 #include <string.h>
 
 
-#define __ESCAPE__
+#define ESCAPE_ESCAPE
 
-#define ESCAPE_DEBUG
+#ifndef ESCAPE_DEBUG
+#define ESCAPE_DEBUG 1
+#endif
 
+
+/* TODO LIST:
+ * - EST_CSI_SM_STR(mode)
+ * - EST_CSI_RM_STR(mode)
+ * - EST_CSI_DECSTBM_STR(top, bottom)
+ * - EST_CSI_DECSLRM_STR(left, right)
+ * - EST_CSI_TBC_STR(mode)
+ * - EST_CSI_DECSTR_STR()
+ * - EST_CSI_DECSCUSR_STR(style)
+ * - EST_CSI_DECSCA_STR(mode)
+ *
+ * - ESCAPE_COLORIZE
+ * 
+ * - ...
+ */
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,81 +39,81 @@ extern "C" {
 
 /* ABOUT `...` */
 
-#if defined(__cplusplus)
-    #if __cplusplus >= 202002L
-        #define ESCAPE_COMPAT_HAS_VA_OPT 1
-    #elif defined(_MSC_VER) && _MSC_VER >= 1925 \
-          && defined(_MSVC_TRADITIONAL) && !_MSVC_TRADITIONAL
-        #define ESCAPE_COMPAT_HAS_VA_OPT 1
-    #elif defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8
-        #define ESCAPE_COMPAT_HAS_VA_OPT 1
-    #elif defined(__clang__) && __clang_major__ >= 12
-        #define ESCAPE_COMPAT_HAS_VA_OPT 1
+#ifndef ESCAPE_COMPAT_HAS_VA_OPT
+    #if defined(__cplusplus)
+        #if defined(__cpp_va_opt) && __cpp_va_opt >= 201907L
+            #define ESCAPE_COMPAT_HAS_VA_OPT 1
+        #elif defined(_MSC_VER) && _MSC_VER >= 1925 \
+              && defined(_MSVC_TRADITIONAL) && !_MSVC_TRADITIONAL
+            #define ESCAPE_COMPAT_HAS_VA_OPT 1
+        #else
+            #define ESCAPE_COMPAT_HAS_VA_OPT 0
+        #endif
+    #elif defined(__STDC_VERSION__)
+        #if __STDC_VERSION__ >= 202311L
+            #define ESCAPE_COMPAT_HAS_VA_OPT 1
+        #elif defined(_MSC_VER) && _MSC_VER >= 1925 \
+              && defined(_MSVC_TRADITIONAL) && !_MSVC_TRADITIONAL
+            #define ESCAPE_COMPAT_HAS_VA_OPT 1
+        #else
+            #define ESCAPE_COMPAT_HAS_VA_OPT 0
+        #endif
     #else
         #define ESCAPE_COMPAT_HAS_VA_OPT 0
     #endif
+#endif
 
-#elif defined(__STDC_VERSION__)
-    #if __STDC_VERSION__ >= 202311L
-        #define ESCAPE_COMPAT_HAS_VA_OPT 1
-    #elif defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8
-        #define ESCAPE_COMPAT_HAS_VA_OPT 1
-    #elif defined(__clang__) && __clang_major__ >= 12
-        #define ESCAPE_COMPAT_HAS_VA_OPT 1
+#ifndef ESCAPE_COMPAT_COMMA_VA_ARGS
+    #if ESCAPE_COMPAT_HAS_VA_OPT
+        /* Standard: expands to ", __VA_ARGS__" if non-empty, otherwise nothing. */
+        #define ESCAPE_COMPAT_COMMA_VA_ARGS(...) __VA_OPT__(,) __VA_ARGS__
+    #elif defined(__GNUC__) || defined(__clang__)
+        /* GNU extension: ## removes the preceding comma when empty. */
+        #define ESCAPE_COMPAT_COMMA_VA_ARGS(...) , ##__VA_ARGS__
     #else
-        #define ESCAPE_COMPAT_HAS_VA_OPT 0
+        #error "Neither __VA_OPT__ nor ##__VA_ARGS__ is available. Define ESCAPE_COMPAT_COMMA_VA_ARGS manually."
     #endif
-
-#else
-    #define ESCAPE_COMPAT_HAS_VA_OPT 0
 #endif
 
-#if ESCAPE_COMPAT_HAS_VA_OPT
-    /* Standard: expands to ", __VA_ARGS__" if non-empty, otherwise nothing. */
-    #define ESCAPE_COMPAT_COMMA_VA_ARGS(...) __VA_OPT__(,) __VA_ARGS__
-#elif defined(__GNUC__) || defined(__clang__)
-    /* GNU extension: ## removes the preceding comma when empty. */
-    #define ESCAPE_COMPAT_COMMA_VA_ARGS(...) , ##__VA_ARGS__
-#else
-    #error "Neither __VA_OPT__ nor ##__VA_ARGS__ is available. Please upgrade your compiler or provide a fallback."
-#endif
-
+#ifndef ESCAPE_COMMA_VA_ARGS
 #define ESCAPE_COMMA_VA_ARGS ESCAPE_COMPAT_COMMA_VA_ARGS
+#endif
 
 /* ABOUT `typeof` */
 
-#if defined(__cplusplus)
-    #if defined(__GNUC__) || defined(__clang__)
-        #define ESCAPE_COMPAT_TYPEOF(...) __typeof__(__VA_ARGS__)
-    #elif defined(_MSC_VER)
-        #define ESCAPE_COMPAT_TYPEOF(...) decltype(__VA_ARGS__)
-    #elif defined(__ESCAPE__)
-        #define ESCAPE_COMPAT_TYPEOF(...) auto
+#ifndef ESCAPE_COMPAT_TYPEOF
+    #if defined(__cplusplus)
+        #if defined(_MSC_VER) && _MSC_VER >= 1600
+            #define ESCAPE_COMPAT_TYPEOF(...) decltype(__VA_ARGS__)
+        #elif __cplusplus >= 201103L
+            #define ESCAPE_COMPAT_TYPEOF(...) decltype(__VA_ARGS__)
+        #elif defined(__GNUC__) || defined(__clang__)
+            #define ESCAPE_COMPAT_TYPEOF(...) __typeof__(__VA_ARGS__)
+        #else
+            #error "typeof is unavailable in this C++ compiler. Define ESCAPE_COMPAT_TYPEOF manually or use an explicit type."
+        #endif
     #else
-        #error "typeof is unavailable in this C++ compiler. Use an explicit type or an inline function instead."
-    #endif
-
-#else
-    #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
-        #define ESCAPE_COMPAT_TYPEOF(...) typeof(__VA_ARGS__)
-    #elif defined(__GNUC__) || defined(__clang__)
-        #define ESCAPE_COMPAT_TYPEOF(...) __typeof__(__VA_ARGS__)
-    #elif defined(__ESCAPE__)
-        #define ESCAPE_COMPAT_TYPEOF(...) auto
-    #else
-        #error "typeof is unavailable in this C compiler. Use an explicit type or an inline function instead."
+        #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
+            #define ESCAPE_COMPAT_TYPEOF(...) typeof(__VA_ARGS__)
+        #elif defined(__GNUC__) || defined(__clang__)
+            #define ESCAPE_COMPAT_TYPEOF(...) __typeof__(__VA_ARGS__)
+        #else
+            #error "typeof is unavailable in this C compiler. Define ESCAPE_COMPAT_TYPEOF manually or use an explicit type."
+        #endif
     #endif
 #endif
 
+#ifndef ESCAPE_TYPEOF
 #define ESCAPE_TYPEOF ESCAPE_COMPAT_TYPEOF
+#endif
 
 /* ABOUT `#` and `##` */
 
-#define __S(_)  #_
-#define _S(_)   __S(_)
+#define ESCAPE__S(_)  #_
+#define ESCAPE_S(_)   ESCAPE__S(_)
 
-#define __C(_x, _y) _x##_y
-#define _C(_x, _y)  __C(_x, _y)
+#define ESCAPE__C(_x, _y) _x##_y
+#define ESCAPE_C(_x, _y)  ESCAPE__C(_x, _y)
 
 #define ESCAPE_EMPTY ((void)0)
 
@@ -109,12 +126,12 @@ extern "C" {
 #define ESCAPE_X_ARG_CNT(...) \
     ESCAPE_X_DISPATCH(_ ESCAPE_COMMA_VA_ARGS(__VA_ARGS__), 7, 6, 5, 4, 3, 2, 1, 0)
 #define ESCAPE_X(_prefix, ...) \
-    _C(_prefix, ESCAPE_X_ARG_CNT(__VA_ARGS__))(__VA_ARGS__)
+    ESCAPE_C(_prefix, ESCAPE_X_ARG_CNT(__VA_ARGS__))(__VA_ARGS__)
 
 /* ABOUT `JOIN` */
 
 #define ESCAPE_JOIN_I(_join_x, ...) _join_x(__VA_ARGS__)
-#define ESCAPE_JOIN(_separator, ...) ESCAPE_JOIN_I(_C(ESCAPE_JOIN_, ESCAPE_X_ARG_CNT(__VA_ARGS__)), _separator ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
+#define ESCAPE_JOIN(_separator, ...) ESCAPE_JOIN_I(ESCAPE_C(ESCAPE_JOIN_, ESCAPE_X_ARG_CNT(__VA_ARGS__)), _separator ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
 #define ESCAPE_JOIN_0(_separator)                               ""
 #define ESCAPE_JOIN_1(_separator, _1)                           _1
 #define ESCAPE_JOIN_2(_separator, _1, _2)                       _1 _separator _2
@@ -124,14 +141,15 @@ extern "C" {
 #define ESCAPE_JOIN_6(_separator, _1, _2, _3, _4, _5, _6)       _1 _separator _2 _separator _3 _separator _4 _separator _5 _separator _6
 #define ESCAPE_JOIN_7(_separator, _1, _2, _3, _4, _5, _6, _7)   _1 _separator _2 _separator _3 _separator _4 _separator _5 _separator _6 _separator _7
 
-#define ESCAPE_JOINS(_separator, ...) ESCAPE_JOIN_I(_C(ESCAPE_JOINS_, ESCAPE_X_ARG_CNT(__VA_ARGS__)), _separator ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
-#define ESCAPE_JOINS_1(_separator, _1)                           _S(_1)
-#define ESCAPE_JOINS_2(_separator, _1, _2)                       _S(_1) _separator _S(_2)
-#define ESCAPE_JOINS_3(_separator, _1, _2, _3)                   _S(_1) _separator _S(_2) _separator _S(_3)
-#define ESCAPE_JOINS_4(_separator, _1, _2, _3, _4)               _S(_1) _separator _S(_2) _separator _S(_3) _separator _S(_4)
-#define ESCAPE_JOINS_5(_separator, _1, _2, _3, _4, _5)           _S(_1) _separator _S(_2) _separator _S(_3) _separator _S(_4) _separator _S(_5)
-#define ESCAPE_JOINS_6(_separator, _1, _2, _3, _4, _5, _6)       _S(_1) _separator _S(_2) _separator _S(_3) _separator _S(_4) _separator _S(_5) _separator _S(_6)
-#define ESCAPE_JOINS_7(_separator, _1, _2, _3, _4, _5, _6, _7)   _S(_1) _separator _S(_2) _separator _S(_3) _separator _S(_4) _separator _S(_5) _separator _S(_6) _separator _S(_7)
+#define ESCAPE_JOINS(_separator, ...) ESCAPE_JOIN_I(ESCAPE_C(ESCAPE_JOINS_, ESCAPE_X_ARG_CNT(__VA_ARGS__)), _separator ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
+#define ESCAPE_JOINS_0(_separator)                               ""
+#define ESCAPE_JOINS_1(_separator, _1)                           ESCAPE_S(_1)
+#define ESCAPE_JOINS_2(_separator, _1, _2)                       ESCAPE_S(_1) _separator ESCAPE_S(_2)
+#define ESCAPE_JOINS_3(_separator, _1, _2, _3)                   ESCAPE_S(_1) _separator ESCAPE_S(_2) _separator ESCAPE_S(_3)
+#define ESCAPE_JOINS_4(_separator, _1, _2, _3, _4)               ESCAPE_S(_1) _separator ESCAPE_S(_2) _separator ESCAPE_S(_3) _separator ESCAPE_S(_4)
+#define ESCAPE_JOINS_5(_separator, _1, _2, _3, _4, _5)           ESCAPE_S(_1) _separator ESCAPE_S(_2) _separator ESCAPE_S(_3) _separator ESCAPE_S(_4) _separator ESCAPE_S(_5)
+#define ESCAPE_JOINS_6(_separator, _1, _2, _3, _4, _5, _6)       ESCAPE_S(_1) _separator ESCAPE_S(_2) _separator ESCAPE_S(_3) _separator ESCAPE_S(_4) _separator ESCAPE_S(_5) _separator ESCAPE_S(_6)
+#define ESCAPE_JOINS_7(_separator, _1, _2, _3, _4, _5, _6, _7)   ESCAPE_S(_1) _separator ESCAPE_S(_2) _separator ESCAPE_S(_3) _separator ESCAPE_S(_4) _separator ESCAPE_S(_5) _separator ESCAPE_S(_6) _separator ESCAPE_S(_7)
 
 /* ABOUT `DECL COPY` */
 
@@ -204,14 +222,14 @@ extern "C" {
 #define ESCAPE_ASSERT(_expression) \
     do { \
         if (!(_expression)) { \
-            fprintf(stderr, "%s:%d: assert: %s", __FILE__, __LINE__, _S(_expression)); \
+            fprintf(stderr, "%s:%d: assert: %s", __FILE__, __LINE__, ESCAPE_S(_expression)); \
             abort(); \
         } \
     } while (0)
 
 /* ABOUT `LOG` */
 
-#define ESCAPE_PRINT_IN(_format, ...)       fprintf(stdin, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
+#define ESCAPE_SCAN_IN(_format, ...)        fscanf(stdin, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
 #define ESCAPE_PRINT_OUT(_format, ...)      fprintf(stdout, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
 #define ESCAPE_PRINT_ERROR(_format, ...)    fprintf(stderr, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
 
@@ -234,7 +252,7 @@ extern "C" {
         fprintf(stderr, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__)); \
     } while (0)
 
-#ifdef ESCAPE_DEBUG
+#if ESCAPE_DEBUG
 #define ESCAPE_LOG_DEBUG(_format, ...) \
     do { \
         fprintf(stderr, "%s:%d: debug: ", __FILE__, __LINE__); \
@@ -252,7 +270,7 @@ extern "C" {
     } while (0)
 
 #define ESCAPE_LOG(_level, _format, ...) \
-    _C(ESCAPE_LOG_, _level)(_format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
+    ESCAPE_C(ESCAPE_LOG_, _level)(_format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
 
 /* ABOUT `TODO` */
 
@@ -276,8 +294,8 @@ extern "C" {
 #define ESCAPE_SAFE_IN_RANGE(x, l, h)   ({ ESCAPE_TYPEOF(x) _x = (x); ESCAPE_TYPEOF(l) _l = (l); ESCAPE_TYPEOF(h) _h = (h); (_x >= _l) && (_x <= _h); })
 #define ESCAPE_IN_RANGE ESCAPE_UNSAFE_IN_RANGE
 
-#define ESCAPE_UNSAFE_ROUND_DIV(a, b)   ((a) >= 0 ? ((((a) + (b)) / 2) / (b)) : ((((a) - (b)) / 2) / (b)))
-#define ESCAPE_SAFE_ROUND_DIV(a, b)     ({ ESCAPE_TYPEOF(a) _a = (a); ESCAPE_TYPEOF(b) _b = (b); _a >= 0 ? (((_a + _b) / 2) / _b) : (((_a - _b) / 2) / _b); })
+#define ESCAPE_UNSAFE_ROUND_DIV(a, b)   ((a) >= 0 ? (((a) + (b) / 2) / (b)) : (((a) - (b) / 2) / (b)))
+#define ESCAPE_SAFE_ROUND_DIV(a, b)     ({ ESCAPE_TYPEOF(a) _a = (a); ESCAPE_TYPEOF(b) _b = (b); _a >= 0 ? ((_a + _b / 2) / _b) : ((_a - _b / 2) / _b); })
 #define ESCAPE_ROUND_DIV ESCAPE_UNSAFE_ROUND_DIV
 
 #pragma endregion "ESCAPE UTIL"
@@ -289,7 +307,7 @@ extern "C" {
 #define EST_BLOCK_OFFSET 0x0100
 
 #define ESCAPE_RGB(R, G, B)     R ";" G ";" B
-#define ESCAPE_SRGB(R, G, B)    _S(R) ";" _S(G) ";" _S(B)
+#define ESCAPE_SRGB(R, G, B)    ESCAPE_S(R) ";" ESCAPE_S(G) ";" ESCAPE_S(B)
 
 #define ESCAPE_JOIN_SEMICOLON_I(...)    ESCAPE_JOIN(__VA_ARGS__)
 #define ESCAPE_JOIN_SEMICOLON(...)      ESCAPE_JOIN_SEMICOLON_I(";" ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
@@ -336,22 +354,22 @@ enum ESCAPE_SEQUENCE_TYPE
 
 #pragma region "ESCAPE BASIC"
 
-#define _ESC_VAL_H      0x1b
-#define _ESC_RAW_H      \x1b
-#define _ESC_CHR_H      '\x1b'
-#define _ESC_STR_H      "\x1b"
+#define ESC_VAL_H       0x1b
+#define ESC_RAW_H       \x1b
+#define ESC_CHR_H       '\x1b'
+#define ESC_STR_H       "\x1b"
 
-#define _ESC_VAL_O      033
-#define _ESC_RAW_O      \033
-#define _ESC_CHR_O      '\033'
-#define _ESC_STR_O      "\033"
+#define ESC_VAL_O       033
+#define ESC_RAW_O       \033
+#define ESC_CHR_O       '\033'
+#define ESC_STR_O       "\033"
 
-#define _ESC_VAL_DEF    _ESC_VAL_H
-#define _ESC_RAW_DEF    _ESC_RAW_H
-#define _ESC_CHR_DEF    _ESC_CHR_H
-#define _ESC_STR_DEF    _ESC_STR_H
+#define ESC_VAL_DEF     ESC_VAL_H
+#define ESC_RAW_DEF     ESC_RAW_H
+#define ESC_CHR_DEF     ESC_CHR_H
+#define ESC_STR_DEF     ESC_STR_H
 
-#define ESC_ESC(_)      _ESC_STR_DEF _
+#define ESC_ESC(_)      ESC_STR_DEF _
 
 /* Escape */
 #define ESCAPE_INTRODUCER_ESC ESC_ESC("")
@@ -427,7 +445,7 @@ enum EST_CSI_TYPE
     EST_CSI_DECSC,      /* Save Cursor */
     EST_CSI_DECRC,      /* Restore Cursor */
 
-    /* REASE AND EDIT */
+    /* ERASE AND EDIT */
 
     EST_CSI_ED,         /* Erase in Display */
     EST_CSI_EL,         /* Erase in Line */
@@ -600,13 +618,13 @@ enum EST_CSI_TYPE
 /* r/g/b LEVEL MAP */
 static const int EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[] = {0, 95, 135, 175, 215, 255};
 
-#define EST_CSI_SGR_256_COLOR_CUBE_INDEX(r, g, b) (16 + 36 * (r) + 6 * (g) + (b))
-#define EST_CSI_SGR_256_COLOR_CUBE_r(index)       (((index) - 16) / 36)
-#define EST_CSI_SGR_256_COLOR_CUBE_g(index)       ((((index) - 16) % 36) / 6)
-#define EST_CSI_SGR_256_COLOR_CUBE_b(index)       (((index) - 16) % 6)
-#define EST_CSI_SGR_256_COLOR_CUBE_R(r)           EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[(r)]
-#define EST_CSI_SGR_256_COLOR_CUBE_G(g)           EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[(g)]
-#define EST_CSI_SGR_256_COLOR_CUBE_B(b)           EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[(b)]
+#define EST_CSI_SGR_256_COLOR_CUBE_INDEX(level_r, level_g, level_b) (16 + 36 * (level_r) + 6 * (level_g) + (level_b))
+#define EST_CSI_SGR_256_COLOR_CUBE_LEVEL_R(index)   (((index) - 16) / 36)
+#define EST_CSI_SGR_256_COLOR_CUBE_LEVEL_G(index)   ((((index) - 16) % 36) / 6)
+#define EST_CSI_SGR_256_COLOR_CUBE_LEVEL_B(index)   (((index) - 16) % 6)
+#define EST_CSI_SGR_256_COLOR_CUBE_R(level_r)       EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[(level_r)]
+#define EST_CSI_SGR_256_COLOR_CUBE_G(level_g)       EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[(level_g)]
+#define EST_CSI_SGR_256_COLOR_CUBE_B(level_b)       EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[(level_b)]
 
 #define EST_CSI_SGR_256_COLOR_CUBE_MIN_LEVEL 0
 #define EST_CSI_SGR_256_COLOR_CUBE_MAX_LEVEL 5
@@ -617,7 +635,8 @@ static const int EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[] = {0, 95, 135, 175
 
 /* 24-LEVEL GRAYSCALE */
 
-#define EST_CSI_SGR_256_COLOR_GRAYSCALE_INDEX(v)    ESCAPE_ROUND_DIV(v - 8, 10)
+#define EST_CSI_SGR_256_COLOR_GRAYSCALE_LEVEL(v)    ESCAPE_ROUND_DIV((v) - 8, 10)
+#define EST_CSI_SGR_256_COLOR_GRAYSCALE_INDEX(v)    (232 + EST_CSI_SGR_256_COLOR_GRAYSCALE_LEVEL(v))
 #define EST_CSI_SGR_256_COLOR_GRAYSCALE_GRAY(index) (8 + 10 * ((index) - 232))
 #define EST_CSI_SGR_256_COLOR_GRAYSCALE_R(index)    EST_CSI_SGR_256_COLOR_GRAYSCALE_GRAY(index)
 #define EST_CSI_SGR_256_COLOR_GRAYSCALE_G(index)    EST_CSI_SGR_256_COLOR_GRAYSCALE_GRAY(index)
@@ -681,7 +700,7 @@ static const int EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[] = {0, 95, 135, 175
 #define EST_CSI_DECSCA_FS   "q"
 #define EST_CSI_DECRQM_FS   "p"
 
-#pragma endregion "EST CSI SGR PARAMS"
+#pragma endregion "EST CSI FINAL STRING"
 
 #pragma region "EST CSI STRING"
 
@@ -701,7 +720,6 @@ static const int EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[] = {0, 95, 135, 175
 #define EST_CSI_RCP_STR()       EST_CSI_NOPI_STR(EST_CSI_RCP_FS)
 #define EST_CSI_DECSC_STR()     EST_ESC_NOI_STR(EST_CSI_DECSC_FS)
 #define EST_CSI_DECRC_STR()     EST_ESC_NOI_STR(EST_CSI_DECRC_FS)
-
 /**
  * - m: 0 (default). Erase from the cursor position to the end of the screen, including the cursor position.
  * - m: 1. Erase from the beginning of the screen to the cursor position, including the cursor position.
@@ -725,20 +743,47 @@ static const int EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[] = {0, 95, 135, 175
 #define EST_CSI_REP_STR(n)      EST_CSI_NOI_STR(n, EST_CSI_REP_FS)
 
 #define EST_CSI_SGR_STR(_P)     EST_CSI_NOI_STR(_P, EST_CSI_SGR_FS)
-#define EST_CSI_SGR_SSTR(_P)    EST_CSI_SGR_STR(_S(_P))
 #define EST_CSI_SGR_COLOR_EXT_STR(m1, m2, c)    EST_CSI_NOI_STR(m1 ";" m2 ";" c, EST_CSI_SGR_FS)
 #define EST_CSI_SGR_TRUE_COLOR_EXT_STR(m, rgb)  EST_CSI_SGR_COLOR_EXT_STR(m, "2", rgb)
 #define EST_CSI_SGR_256_COLOR_EXT_STR(m, n)     EST_CSI_SGR_COLOR_EXT_STR(m, "5", n)
-#define EST_CSI_SGR_FC_EXT_TRUE_STR(rgb)        EST_CSI_SGR_TRUE_COLOR_EXT_STR(_S(EST_CSI_SGR_FC_EXT), rgb)
-#define EST_CSI_SGR_BC_EXT_TRUE_STR(rgb)        EST_CSI_SGR_TRUE_COLOR_EXT_STR(_S(EST_CSI_SGR_BC_EXT), rgb)
-#define EST_CSI_SGR_FC_EXT_256_STR(n)           EST_CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_FC_EXT), n)
-#define EST_CSI_SGR_BC_EXT_256_STR(n)           EST_CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_BC_EXT), n)
-#define EST_CSI_SGR_UC_EXT_TRUE_STR(rgb)        EST_CSI_SGR_TRUE_COLOR_EXT_STR(_S(EST_CSI_SGR_UC_EXT), rgb)
-#define EST_CSI_SGR_UC_EXT_256_STR(n)           EST_CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_UC_EXT), n)
+#define EST_CSI_SGR_FC_EXT_TRUE_STR(rgb)        EST_CSI_SGR_TRUE_COLOR_EXT_STR(ESCAPE_S(EST_CSI_SGR_FC_EXT), rgb)
+#define EST_CSI_SGR_BC_EXT_TRUE_STR(rgb)        EST_CSI_SGR_TRUE_COLOR_EXT_STR(ESCAPE_S(EST_CSI_SGR_BC_EXT), rgb)
+#define EST_CSI_SGR_FC_EXT_256_STR(n)           EST_CSI_SGR_256_COLOR_EXT_STR(ESCAPE_S(EST_CSI_SGR_FC_EXT), n)
+#define EST_CSI_SGR_BC_EXT_256_STR(n)           EST_CSI_SGR_256_COLOR_EXT_STR(ESCAPE_S(EST_CSI_SGR_BC_EXT), n)
+#define EST_CSI_SGR_UC_EXT_TRUE_STR(rgb)        EST_CSI_SGR_TRUE_COLOR_EXT_STR(ESCAPE_S(EST_CSI_SGR_UC_EXT), rgb)
+#define EST_CSI_SGR_UC_EXT_256_STR(n)           EST_CSI_SGR_256_COLOR_EXT_STR(ESCAPE_S(EST_CSI_SGR_UC_EXT), n)
+#define EST_CSI_SGR_FC_EXT_256_SSTR(n)          EST_CSI_SGR_256_COLOR_EXT_STR(ESCAPE_S(EST_CSI_SGR_FC_EXT), ESCAPE_S(n))
+#define EST_CSI_SGR_BC_EXT_256_SSTR(n)          EST_CSI_SGR_256_COLOR_EXT_STR(ESCAPE_S(EST_CSI_SGR_BC_EXT), ESCAPE_S(n))
+#define EST_CSI_SGR_UC_EXT_256_SSTR(n)          EST_CSI_SGR_256_COLOR_EXT_STR(ESCAPE_S(EST_CSI_SGR_UC_EXT), ESCAPE_S(n))
 
-#define EST_CSI_SGR_FC_EXT_256_SSTR(n)          EST_CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_FC_EXT), _S(n))
-#define EST_CSI_SGR_BC_EXT_256_SSTR(n)          EST_CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_BC_EXT), _S(n))
-#define EST_CSI_SGR_UC_EXT_256_SSTR(n)          EST_CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_UC_EXT), _S(n))
+
+#define EST_CSI_CUU_SSTR(n)     EST_CSI_CUU_STR(ESCAPE_S(n))
+#define EST_CSI_CUD_SSTR(n)     EST_CSI_CUD_STR(ESCAPE_S(n))
+#define EST_CSI_CUF_SSTR(n)     EST_CSI_CUF_STR(ESCAPE_S(n))
+#define EST_CSI_CUB_SSTR(n)     EST_CSI_CUB_STR(ESCAPE_S(n))
+#define EST_CSI_CNL_SSTR(n)     EST_CSI_CNL_STR(ESCAPE_S(n))
+#define EST_CSI_CPL_SSTR(n)     EST_CSI_CPL_STR(ESCAPE_S(n))
+#define EST_CSI_CHA_SSTR(n)     EST_CSI_CHA_STR(ESCAPE_S(n))
+#define EST_CSI_CUP_SSTR(rc)    EST_CSI_CUP_STR(ESCAPE_S(rc))
+#define EST_CSI_HVP_SSTR(rc)    EST_CSI_HVP_STR(ESCAPE_S(rc))
+#define EST_CSI_VPA_SSTR(n)     EST_CSI_VPA_STR(ESCAPE_S(n))
+#define EST_CSI_CHT_SSTR(n)     EST_CSI_CHT_STR(ESCAPE_S(n))
+#define EST_CSI_CBT_SSTR(n)     EST_CSI_CBT_STR(ESCAPE_S(n))
+#define EST_CSI_SCP_SSTR()      EST_CSI_SCP_STR()
+#define EST_CSI_RCP_SSTR()      EST_CSI_RCP_STR()
+#define EST_CSI_DECSC_SSTR()    EST_CSI_DECSC_STR()
+#define EST_CSI_DECRC_SSTR()    EST_CSI_DECRC_STR()
+#define EST_CSI_ED_SSTR(m)      EST_CSI_ED_STR(ESCAPE_S(m))
+#define EST_CSI_EL_SSTR(m)      EST_CSI_EL_STR(ESCAPE_S(m))
+#define EST_CSI_ICH_SSTR(n)     EST_CSI_ICH_STR(ESCAPE_S(n))
+#define EST_CSI_DCH_SSTR(n)     EST_CSI_DCH_STR(ESCAPE_S(n))
+#define EST_CSI_ECH_SSTR(n)     EST_CSI_ECH_STR(ESCAPE_S(n))
+#define EST_CSI_IL_SSTR(n)      EST_CSI_IL_STR(ESCAPE_S(n))
+#define EST_CSI_DL_SSTR(n)      EST_CSI_DL_STR(ESCAPE_S(n))
+#define EST_CSI_SU_SSTR(n)      EST_CSI_SU_STR(ESCAPE_S(n))
+#define EST_CSI_SD_SSTR(n)      EST_CSI_SD_STR(ESCAPE_S(n))
+#define EST_CSI_REP_SSTR(n)     EST_CSI_REP_STR(ESCAPE_S(n))
+#define EST_CSI_SGR_SSTR(_P)    EST_CSI_SGR_STR(ESCAPE_S(_P))
 
 #pragma endregion "EST CSI STRING"
 
@@ -750,7 +795,7 @@ static const int EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[] = {0, 95, 135, 175
 
 #pragma region "ESCAPE COLOR"
 
-// #define ESCAPE_COLORIZE ESCAPE_TODO("ESCAPE_COLORIZE")
+
 
 #pragma endregion "ESCAPE COLOR"
 
