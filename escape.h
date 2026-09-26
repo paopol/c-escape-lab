@@ -354,45 +354,45 @@ enum ESCAPE_SEQUENCE_TYPE
 #define ESC_ESC(_)      _ESC_STR_DEF _
 
 /* Escape */
-#define INTRODUCER_ESC ESC_ESC("")
+#define ESCAPE_INTRODUCER_ESC ESC_ESC("")
 /* Control Sequence Introducer */
-#define INTRODUCER_CSI ESC_ESC("[")
+#define ESCAPE_INTRODUCER_CSI ESC_ESC("[")
 /* Operating System Command */
-#define INTRODUCER_OSC ESC_ESC("]")
+#define ESCAPE_INTRODUCER_OSC ESC_ESC("]")
 /* Device Control String */
-#define INTRODUCER_DCS ESC_ESC("P")
+#define ESCAPE_INTRODUCER_DCS ESC_ESC("P")
 /* Application Program Command */
-#define INTRODUCER_APC ESC_ESC("_")
+#define ESCAPE_INTRODUCER_APC ESC_ESC("_")
 /* String Terminal */
-#define INTRODUCER_ST  ESC_ESC("\\")
+#define ESCAPE_INTRODUCER_ST  ESC_ESC("\\")
 /* Start of String */
-#define INTRODUCER_SOS ESC_ESC("X")
+#define ESCAPE_INTRODUCER_SOS ESC_ESC("X")
 /* Privacy Message */
-#define INTRODUCER_PM  ESC_ESC("^")
+#define ESCAPE_INTRODUCER_PM  ESC_ESC("^")
 
 /* Escape */
-#define ESC_STR(_I, F)          INTRODUCER_ESC _I F
-#define ESC_NOI_STR(F)          ESC_STR("", F)
+#define EST_ESC_STR(_I, F)          ESCAPE_INTRODUCER_ESC _I F
+#define EST_ESC_NOI_STR(F)          EST_ESC_STR("", F)
 /* Control Sequence Introducer */
-#define CSI_STR(_P, _I, F)      INTRODUCER_CSI _P _I F
-#define CSI_NOP_STR(_I, F)      CSI_STR("", _I, F)
-#define CSI_NOI_STR(_P, F)      CSI_STR(_P, "", F)
-#define CSI_NOPI_STR(F)         CSI_STR("", "", F)
+#define EST_CSI_STR(_P, _I, F)      ESCAPE_INTRODUCER_CSI _P _I F
+#define EST_CSI_NOP_STR(_I, F)      EST_CSI_STR("", _I, F)
+#define EST_CSI_NOI_STR(_P, F)      EST_CSI_STR(_P, "", F)
+#define EST_CSI_NOPI_STR(F)         EST_CSI_STR("", "", F)
 /* Operating System Command */
-#define OSC_STR(S)              INTRODUCER_OSC S INTRODUCER_ST
+#define EST_OSC_STR(S)              ESCAPE_INTRODUCER_OSC S ESCAPE_INTRODUCER_ST
 /* Device Control String */
-#define DCS_STR(_P, _I, F, D)   INTRODUCER_DCS _P _I F D INTRODUCER_ST
-#define DCS_NOP_STR(_I, F)      DCS_STR("", _I, F)
-#define DCS_NOI_STR(_P, F)      DCS_STR(_P, "", F)
-#define DCS_NOPI_STR(F)         DCS_STR("", "", F)
+#define EST_DCS_STR(_P, _I, F, D)   ESCAPE_INTRODUCER_DCS _P _I F D ESCAPE_INTRODUCER_ST
+#define EST_DCS_NOP_STR(_I, F)      EST_DCS_STR("", _I, F)
+#define EST_DCS_NOI_STR(_P, F)      EST_DCS_STR(_P, "", F)
+#define EST_DCS_NOPI_STR(F)         EST_DCS_STR("", "", F)
 /* Application Program Command */
-#define APC_STR(D)              INTRODUCER_APC D INTRODUCER_ST
+#define EST_APC_STR(D)              ESCAPE_INTRODUCER_APC D ESCAPE_INTRODUCER_ST
 /* String Terminal */
-#define ST_STR()                INTRODUCER_ST
+#define EST_ST_STR()                ESCAPE_INTRODUCER_ST
 /* Start of String */
-#define SOS_STR(D)              INTRODUCER_SOS D INTRODUCER_ST
+#define EST_SOS_STR(D)              ESCAPE_INTRODUCER_SOS D ESCAPE_INTRODUCER_ST
 /* Privacy Message */
-#define PM_STR(D)               INTRODUCER_PM D INTRODUCER_ST
+#define EST_PM_STR(D)               ESCAPE_INTRODUCER_PM D ESCAPE_INTRODUCER_ST
 
 #pragma endregion "ESCAPE BASIC"
 
@@ -492,82 +492,82 @@ enum EST_CSI_TYPE
 
 /* SGR COMMON ATTRIBUTES */
 
-#define EST_CSI_SGR_RESET               0
-#define EST_CSI_SGR_NORMAL              0
-#define EST_CSI_SGR_BOLD                1
-#define EST_CSI_SGR_INCREASED_INTENSITY 1
-#define EST_CSI_SGR_FAINT               2
-#define EST_CSI_SGR_DECREASED_INTENSITY 2
-#define EST_CSI_SGR_ITALIC              3
-#define EST_CSI_SGR_UNDERLINE           4
-#define EST_CSI_SGR_SLOW_BLINK          5
-#define EST_CSI_SGR_RAPID_BLINK         6
-#define EST_CSI_SGR_REVERSE_VIDEO       7
-#define EST_CSI_SGR_SWAP_FORE_BACK      7
-#define EST_CSI_SGR_HIDE                8
-#define EST_CSI_SGR_CONCEAL             8
-#define EST_CSI_SGR_STRIKE              9
-#define EST_CSI_SGR_CROSSED_OUT         9
+#define EST_CSI_SGR_RESET                       0
+#define EST_CSI_SGR_NORMAL                      0
+#define EST_CSI_SGR_BOLD                        1
+#define EST_CSI_SGR_INCREASED_INTENSITY         1
+#define EST_CSI_SGR_FAINT                       2
+#define EST_CSI_SGR_DECREASED_INTENSITY         2
+#define EST_CSI_SGR_ITALIC                      3
+#define EST_CSI_SGR_UNDERLINE                   4
+#define EST_CSI_SGR_SLOW_BLINK                  5
+#define EST_CSI_SGR_RAPID_BLINK                 6
+#define EST_CSI_SGR_REVERSE_VIDEO               7
+#define EST_CSI_SGR_SWAP_FORE_BACK              7
+#define EST_CSI_SGR_HIDE                        8
+#define EST_CSI_SGR_CONCEAL                     8
+#define EST_CSI_SGR_STRIKE                      9
+#define EST_CSI_SGR_CROSSED_OUT                 9
 
-#define EST_CSI_SGR_DOUBLY_UNDERLINE        21
-#define EST_CSI_SGR_NOT_BOLD                22
-#define EST_CSI_SGR_NORMAL_INTENSITY        22
-#define EST_CSI_SGR_NOT_ITALIC              23
-#define EST_CSI_SGR_NOT_UNDERLINE           24
-#define EST_CSI_SGR_NOT_BLINKING            25
-#define EST_CSI_SGR_PROPORTIONAL_SPACING    26
-#define EST_CSI_SGR_NOT_REVERSED            27
-#define EST_CSI_SGR_REVEAL                  28
-#define EST_CSI_SGR_NOT_HIDDEN              28
-#define EST_CSI_SGR_NOT_STRIKE              29
-#define EST_CSI_SGR_NOT_CROSSED_OUT         29
+#define EST_CSI_SGR_DOUBLY_UNDERLINE            21
+#define EST_CSI_SGR_NOT_BOLD                    22
+#define EST_CSI_SGR_NORMAL_INTENSITY            22
+#define EST_CSI_SGR_NOT_ITALIC                  23
+#define EST_CSI_SGR_NOT_UNDERLINE               24
+#define EST_CSI_SGR_NOT_BLINKING                25
+#define EST_CSI_SGR_PROPORTIONAL_SPACING        26
+#define EST_CSI_SGR_NOT_REVERSED                27
+#define EST_CSI_SGR_REVEAL                      28
+#define EST_CSI_SGR_NOT_HIDDEN                  28
+#define EST_CSI_SGR_NOT_STRIKE                  29
+#define EST_CSI_SGR_NOT_CROSSED_OUT             29
 
 /* SGR COLOR */
 
-#define EST_CSI_SGR_FC_BLACK    30
-#define EST_CSI_SGR_FC_RED      31
-#define EST_CSI_SGR_FC_GREEN    32
-#define EST_CSI_SGR_FC_YELLOW   33
-#define EST_CSI_SGR_FC_BLUE     34
-#define EST_CSI_SGR_FC_MAGENTA  35
-#define EST_CSI_SGR_FC_CYAN     36
-#define EST_CSI_SGR_FC_WHITE    37
-#define EST_CSI_SGR_FC_EXT      38
-#define EST_CSI_SGR_FC_DEFAULT  39
+#define EST_CSI_SGR_FC_BLACK                    30
+#define EST_CSI_SGR_FC_RED                      31
+#define EST_CSI_SGR_FC_GREEN                    32
+#define EST_CSI_SGR_FC_YELLOW                   33
+#define EST_CSI_SGR_FC_BLUE                     34
+#define EST_CSI_SGR_FC_MAGENTA                  35
+#define EST_CSI_SGR_FC_CYAN                     36
+#define EST_CSI_SGR_FC_WHITE                    37
+#define EST_CSI_SGR_FC_EXT                      38
+#define EST_CSI_SGR_FC_DEFAULT                  39
 
-#define EST_CSI_SGR_BC_BLACK    40
-#define EST_CSI_SGR_BC_RED      41
-#define EST_CSI_SGR_BC_GREEN    42
-#define EST_CSI_SGR_BC_YELLOW   43
-#define EST_CSI_SGR_BC_BLUE     44
-#define EST_CSI_SGR_BC_MAGENTA  45
-#define EST_CSI_SGR_BC_CYAN     46
-#define EST_CSI_SGR_BC_WHITE    47
-#define EST_CSI_SGR_BC_EXT      48
-#define EST_CSI_SGR_BC_DEFAULT  49
+#define EST_CSI_SGR_BC_BLACK                    40
+#define EST_CSI_SGR_BC_RED                      41
+#define EST_CSI_SGR_BC_GREEN                    42
+#define EST_CSI_SGR_BC_YELLOW                   43
+#define EST_CSI_SGR_BC_BLUE                     44
+#define EST_CSI_SGR_BC_MAGENTA                  45
+#define EST_CSI_SGR_BC_CYAN                     46
+#define EST_CSI_SGR_BC_WHITE                    47
+#define EST_CSI_SGR_BC_EXT                      48
+#define EST_CSI_SGR_BC_DEFAULT                  49
 
-#define EST_CSI_SGR_NOT_PROPORTIONAL_SPACING 50
+#define EST_CSI_SGR_NOT_PROPORTIONAL_SPACING    50
 
-#define EST_CSI_SGR_UC_EXT      58
-#define EST_CSI_SGR_UC_DEFAULT  59
+#define EST_CSI_SGR_UC_EXT                      58
+#define EST_CSI_SGR_UC_DEFAULT                  59
 
-#define EST_CSI_SGR_BFC_BLACK   90
-#define EST_CSI_SGR_BFC_RED     91
-#define EST_CSI_SGR_BFC_GREEN   92
-#define EST_CSI_SGR_BFC_YELLOW  93
-#define EST_CSI_SGR_BFC_BLUE    94
-#define EST_CSI_SGR_BFC_MAGENTA 95
-#define EST_CSI_SGR_BFC_CYAN    96
-#define EST_CSI_SGR_BFC_WHITE   97
+#define EST_CSI_SGR_BFC_BLACK                   90
+#define EST_CSI_SGR_BFC_RED                     91
+#define EST_CSI_SGR_BFC_GREEN                   92
+#define EST_CSI_SGR_BFC_YELLOW                  93
+#define EST_CSI_SGR_BFC_BLUE                    94
+#define EST_CSI_SGR_BFC_MAGENTA                 95
+#define EST_CSI_SGR_BFC_CYAN                    96
+#define EST_CSI_SGR_BFC_WHITE                   97
 
-#define EST_CSI_SGR_BBC_BLACK   100
-#define EST_CSI_SGR_BBC_RED     101
-#define EST_CSI_SGR_BBC_GREEN   102
-#define EST_CSI_SGR_BBC_YELLOW  103
-#define EST_CSI_SGR_BBC_BLUE    104
-#define EST_CSI_SGR_BBC_MAGENTA 105
-#define EST_CSI_SGR_BBC_CYAN    106
-#define EST_CSI_SGR_BBC_WHITE   107
+#define EST_CSI_SGR_BBC_BLACK                   100
+#define EST_CSI_SGR_BBC_RED                     101
+#define EST_CSI_SGR_BBC_GREEN                   102
+#define EST_CSI_SGR_BBC_YELLOW                  103
+#define EST_CSI_SGR_BBC_BLUE                    104
+#define EST_CSI_SGR_BBC_MAGENTA                 105
+#define EST_CSI_SGR_BBC_CYAN                    106
+#define EST_CSI_SGR_BBC_WHITE                   107
 
 #pragma endregion "EST CSI SGR PARAMS"
 
@@ -634,73 +634,73 @@ static const int EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[] = {0, 95, 135, 175
 
 #pragma region "EST CSI FINAL STRING"
 
-#define CSI_CUU_FS      "A"
-#define CSI_CUD_FS      "B"
-#define CSI_CUF_FS      "C"
-#define CSI_CUB_FS      "D"
-#define CSI_CNL_FS      "E"
-#define CSI_CPL_FS      "F"
-#define CSI_CHA_FS      "G"
-#define CSI_CUP_FS      "H"
-#define CSI_HVP_FS      "f"
-#define CSI_VPA_FS      "d"
-#define CSI_CHT_FS      "I"
-#define CSI_CBT_FS      "Z"
-#define CSI_SCP_FS      "s"
-#define CSI_RCP_FS      "u"
-#define CSI_DECSC_FS    "7"
-#define CSI_DECRC_FS    "8"
+#define EST_CSI_CUU_FS      "A"
+#define EST_CSI_CUD_FS      "B"
+#define EST_CSI_CUF_FS      "C"
+#define EST_CSI_CUB_FS      "D"
+#define EST_CSI_CNL_FS      "E"
+#define EST_CSI_CPL_FS      "F"
+#define EST_CSI_CHA_FS      "G"
+#define EST_CSI_CUP_FS      "H"
+#define EST_CSI_HVP_FS      "f"
+#define EST_CSI_VPA_FS      "d"
+#define EST_CSI_CHT_FS      "I"
+#define EST_CSI_CBT_FS      "Z"
+#define EST_CSI_SCP_FS      "s"
+#define EST_CSI_RCP_FS      "u"
+#define EST_CSI_DECSC_FS    "7"
+#define EST_CSI_DECRC_FS    "8"
 
-#define CSI_ED_FS       "J"
-#define CSI_EL_FS       "K"
-#define CSI_ICH_FS      "@"
-#define CSI_DCH_FS      "P"
-#define CSI_ECH_FS      "X"
-#define CSI_IL_FS       "L"
-#define CSI_DL_FS       "M"
-#define CSI_SU_FS       "S"
-#define CSI_SD_FS       "T"
-#define CSI_REP_FS      "b"
+#define EST_CSI_ED_FS       "J"
+#define EST_CSI_EL_FS       "K"
+#define EST_CSI_ICH_FS      "@"
+#define EST_CSI_DCH_FS      "P"
+#define EST_CSI_ECH_FS      "X"
+#define EST_CSI_IL_FS       "L"
+#define EST_CSI_DL_FS       "M"
+#define EST_CSI_SU_FS       "S"
+#define EST_CSI_SD_FS       "T"
+#define EST_CSI_REP_FS      "b"
 
-#define CSI_SGR_FS      "m"
+#define EST_CSI_SGR_FS      "m"
 
-#define CSI_DSR_FS      "n"
-#define CSI_CPR_FS      "n"
-#define CSI_DA1_FS      "c"
-#define CSI_DA2_FS      "c"
+#define EST_CSI_DSR_FS      "n"
+#define EST_CSI_CPR_FS      "n"
+#define EST_CSI_DA1_FS      "c"
+#define EST_CSI_DA2_FS      "c"
 
-#define CSI_DECSTBM_FS  "r"
-#define CSI_DECSLRM_FS  "s"
+#define EST_CSI_DECSTBM_FS  "r"
+#define EST_CSI_DECSLRM_FS  "s"
 
-#define CSI_TBC_FS      "g"
-// #define CSI_CHT_FS      "I"
-// #define CSI_CBT_FS      "Z"
+#define EST_CSI_TBC_FS      "g"
+// #define EST_CSI_CHT_FS      "I"
+// #define EST_CSI_CBT_FS      "Z"
 
-#define CSI_DECSTR_FS   "p"
-#define CSI_DECSCUSR_FS "q"
-#define CSI_DECSCA_FS   "q"
-#define CSI_DECRQM_FS   "p"
+#define EST_CSI_DECSTR_FS   "p"
+#define EST_CSI_DECSCUSR_FS "q"
+#define EST_CSI_DECSCA_FS   "q"
+#define EST_CSI_DECRQM_FS   "p"
 
 #pragma endregion "EST CSI SGR PARAMS"
 
 #pragma region "EST CSI STRING"
 
-#define CSI_CUU_STR(n)      CSI_NOI_STR(n, CSI_CUU_FS)
-#define CSI_CUD_STR(n)      CSI_NOI_STR(n, CSI_CUD_FS)
-#define CSI_CUF_STR(n)      CSI_NOI_STR(n, CSI_CUF_FS)
-#define CSI_CUB_STR(n)      CSI_NOI_STR(n, CSI_CUB_FS)
-#define CSI_CNL_STR(n)      CSI_NOI_STR(n, CSI_CNL_FS)
-#define CSI_CPL_STR(n)      CSI_NOI_STR(n, CSI_CPL_FS)
-#define CSI_CHA_STR(n)      CSI_NOI_STR(n, CSI_CHA_FS)
-#define CSI_CUP_STR(rc)     CSI_NOI_STR(rc, CSI_CUP_FS)
-#define CSI_HVP_STR(rc)     CSI_NOI_STR(rc, CSI_HVP_FS)
-#define CSI_VPA_STR(n)      CSI_NOI_STR(n, CSI_VPA_FS)
-#define CSI_CHT_STR(n)      CSI_NOI_STR(n, CSI_CHT_FS)
-#define CSI_CBT_STR(n)      CSI_NOI_STR(n, CSI_CBT_FS)
-#define CSI_SCP_STR()       CSI_NOPI_STR(CSI_SCP_FS)
-#define CSI_RCP_STR()       CSI_NOPI_STR(CSI_RCP_FS)
-#define CSI_DECSC_STR()     ESC_NOI_STR(CSI_DECSC_FS)
-#define CSI_DECRC_STR()     ESC_NOI_STR(CSI_DECRC_FS)
+#define EST_CSI_CUU_STR(n)      EST_CSI_NOI_STR(n, EST_CSI_CUU_FS)
+#define EST_CSI_CUD_STR(n)      EST_CSI_NOI_STR(n, EST_CSI_CUD_FS)
+#define EST_CSI_CUF_STR(n)      EST_CSI_NOI_STR(n, EST_CSI_CUF_FS)
+#define EST_CSI_CUB_STR(n)      EST_CSI_NOI_STR(n, EST_CSI_CUB_FS)
+#define EST_CSI_CNL_STR(n)      EST_CSI_NOI_STR(n, EST_CSI_CNL_FS)
+#define EST_CSI_CPL_STR(n)      EST_CSI_NOI_STR(n, EST_CSI_CPL_FS)
+#define EST_CSI_CHA_STR(n)      EST_CSI_NOI_STR(n, EST_CSI_CHA_FS)
+#define EST_CSI_CUP_STR(rc)     EST_CSI_NOI_STR(rc, EST_CSI_CUP_FS)
+#define EST_CSI_HVP_STR(rc)     EST_CSI_NOI_STR(rc, EST_CSI_HVP_FS)
+#define EST_CSI_VPA_STR(n)      EST_CSI_NOI_STR(n, EST_CSI_VPA_FS)
+#define EST_CSI_CHT_STR(n)      EST_CSI_NOI_STR(n, EST_CSI_CHT_FS)
+#define EST_CSI_CBT_STR(n)      EST_CSI_NOI_STR(n, EST_CSI_CBT_FS)
+#define EST_CSI_SCP_STR()       EST_CSI_NOPI_STR(EST_CSI_SCP_FS)
+#define EST_CSI_RCP_STR()       EST_CSI_NOPI_STR(EST_CSI_RCP_FS)
+#define EST_CSI_DECSC_STR()     EST_ESC_NOI_STR(EST_CSI_DECSC_FS)
+#define EST_CSI_DECRC_STR()     EST_ESC_NOI_STR(EST_CSI_DECRC_FS)
 
 /**
  * - m: 0 (default). Erase from the cursor position to the end of the screen, including the cursor position.
@@ -708,38 +708,37 @@ static const int EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[] = {0, 95, 135, 175
  * - m: 2. Erase the entire screen.
  * - m: 3. Erase scrollback buffer, an xterm extension, not supported by all terminals.
  */
-#define CSI_ED_STR(m)       CSI_NOI_STR(m, CSI_ED_FS)
+#define EST_CSI_ED_STR(m)       EST_CSI_NOI_STR(m, EST_CSI_ED_FS)
 /**
  * - m: 0 (default). Erase from the cursor position to the end of the line, including the cursor position.
  * - m: 1. Erase from the beginning of the line to the cursor position, including the cursor.
  * - m: 2. Erase entire line.
  */
-#define CSI_EL_STR(m)       CSI_NOI_STR(m, CSI_EL_FS)
-#define CSI_ICH_STR(n)      CSI_NOI_STR(n, CSI_ICH_FS)
-#define CSI_DCH_STR(n)      CSI_NOI_STR(n, CSI_DCH_FS)
-#define CSI_ECH_STR(n)      CSI_NOI_STR(n, CSI_ECH_FS)
-#define CSI_IL_STR(n)       CSI_NOI_STR(n, CSI_IL_FS)
-#define CSI_DL_STR(n)       CSI_NOI_STR(n, CSI_DL_FS)
-#define CSI_SU_STR(n)       CSI_NOI_STR(n, CSI_SU_FS)
-#define CSI_SD_STR(n)       CSI_NOI_STR(n, CSI_SD_FS)
-#define CSI_REP_STR(n)      CSI_NOI_STR(n, CSI_REP_FS)
+#define EST_CSI_EL_STR(m)       EST_CSI_NOI_STR(m, EST_CSI_EL_FS)
+#define EST_CSI_ICH_STR(n)      EST_CSI_NOI_STR(n, EST_CSI_ICH_FS)
+#define EST_CSI_DCH_STR(n)      EST_CSI_NOI_STR(n, EST_CSI_DCH_FS)
+#define EST_CSI_ECH_STR(n)      EST_CSI_NOI_STR(n, EST_CSI_ECH_FS)
+#define EST_CSI_IL_STR(n)       EST_CSI_NOI_STR(n, EST_CSI_IL_FS)
+#define EST_CSI_DL_STR(n)       EST_CSI_NOI_STR(n, EST_CSI_DL_FS)
+#define EST_CSI_SU_STR(n)       EST_CSI_NOI_STR(n, EST_CSI_SU_FS)
+#define EST_CSI_SD_STR(n)       EST_CSI_NOI_STR(n, EST_CSI_SD_FS)
+#define EST_CSI_REP_STR(n)      EST_CSI_NOI_STR(n, EST_CSI_REP_FS)
 
-#define CSI_SGR_STR(_P)     CSI_NOI_STR(_P, CSI_SGR_FS)
-#define CSI_SGR_SSTR(_P)    CSI_SGR_STR(_S(_P))
-#define CSI_SGR_COLOR_EXT_STR(m1, m2, c)    CSI_NOI_STR(m1 ";" m2 ";" c, CSI_SGR_FS)
-#define CSI_SGR_TRUE_COLOR_EXT_STR(m, rgb)  CSI_SGR_COLOR_EXT_STR(m, "2", rgb)
-#define CSI_SGR_256_COLOR_EXT_STR(m, n)     CSI_SGR_COLOR_EXT_STR(m, "5", n)
-#define CSI_SGR_FC_EXT_TRUE_STR(rgb)        CSI_SGR_TRUE_COLOR_EXT_STR(_S(EST_CSI_SGR_FC_EXT), rgb)
-#define CSI_SGR_BC_EXT_TRUE_STR(rgb)        CSI_SGR_TRUE_COLOR_EXT_STR(_S(EST_CSI_SGR_BC_EXT), rgb)
-#define CSI_SGR_FC_EXT_256_STR(n)           CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_FC_EXT), n)
-#define CSI_SGR_BC_EXT_256_STR(n)           CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_BC_EXT), n)
-#define CSI_SGR_UC_EXT_TRUE_STR(rgb)        CSI_SGR_TRUE_COLOR_EXT_STR(_S(EST_CSI_SGR_UC_EXT), rgb)
-#define CSI_SGR_UC_EXT_256_STR(n)           CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_UC_EXT), n)
+#define EST_CSI_SGR_STR(_P)     EST_CSI_NOI_STR(_P, EST_CSI_SGR_FS)
+#define EST_CSI_SGR_SSTR(_P)    EST_CSI_SGR_STR(_S(_P))
+#define EST_CSI_SGR_COLOR_EXT_STR(m1, m2, c)    EST_CSI_NOI_STR(m1 ";" m2 ";" c, EST_CSI_SGR_FS)
+#define EST_CSI_SGR_TRUE_COLOR_EXT_STR(m, rgb)  EST_CSI_SGR_COLOR_EXT_STR(m, "2", rgb)
+#define EST_CSI_SGR_256_COLOR_EXT_STR(m, n)     EST_CSI_SGR_COLOR_EXT_STR(m, "5", n)
+#define EST_CSI_SGR_FC_EXT_TRUE_STR(rgb)        EST_CSI_SGR_TRUE_COLOR_EXT_STR(_S(EST_CSI_SGR_FC_EXT), rgb)
+#define EST_CSI_SGR_BC_EXT_TRUE_STR(rgb)        EST_CSI_SGR_TRUE_COLOR_EXT_STR(_S(EST_CSI_SGR_BC_EXT), rgb)
+#define EST_CSI_SGR_FC_EXT_256_STR(n)           EST_CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_FC_EXT), n)
+#define EST_CSI_SGR_BC_EXT_256_STR(n)           EST_CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_BC_EXT), n)
+#define EST_CSI_SGR_UC_EXT_TRUE_STR(rgb)        EST_CSI_SGR_TRUE_COLOR_EXT_STR(_S(EST_CSI_SGR_UC_EXT), rgb)
+#define EST_CSI_SGR_UC_EXT_256_STR(n)           EST_CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_UC_EXT), n)
 
-
-#define CSI_SGR_FC_EXT_256_SSTR(n)          CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_FC_EXT), _S(n))
-#define CSI_SGR_BC_EXT_256_SSTR(n)          CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_BC_EXT), _S(n))
-#define CSI_SGR_UC_EXT_256_SSTR(n)          CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_UC_EXT), _S(n))
+#define EST_CSI_SGR_FC_EXT_256_SSTR(n)          EST_CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_FC_EXT), _S(n))
+#define EST_CSI_SGR_BC_EXT_256_SSTR(n)          EST_CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_BC_EXT), _S(n))
+#define EST_CSI_SGR_UC_EXT_256_SSTR(n)          EST_CSI_SGR_256_COLOR_EXT_STR(_S(EST_CSI_SGR_UC_EXT), _S(n))
 
 #pragma endregion "EST CSI STRING"
 
@@ -751,7 +750,7 @@ static const int EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[] = {0, 95, 135, 175
 
 #pragma region "ESCAPE COLOR"
 
-// #define ESCAPE_COLORIZE(text, fg, bg, ) CSI_SGR_SSTR(fg) CSI_SGR_SSTR(bg) text CSI_SGR_SSTR(EST_CSI_SGR_RESET)
+// #define ESCAPE_COLORIZE ESCAPE_TODO("ESCAPE_COLORIZE")
 
 #pragma endregion "ESCAPE COLOR"
 
