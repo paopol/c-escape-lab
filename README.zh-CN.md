@@ -141,7 +141,7 @@ fputs(EST_CSI_SGR_SSTR(EST_CSI_SGR_BOLD) "bold" EST_CSI_SGR_SSTR(EST_CSI_SGR_RES
 
 | 前缀 | 用途 |
 | --- | --- |
-| `ESCAPE_` | 预处理器工具、I/O/日志包装和通用小工具 |
+| `ESCAPE_` | 预处理器工具、断言、TODO 处理和数值工具 |
 | `EST_` | 控制序列类型、参数、最终字节和序列构造器 |
 | `EST_CSI_` | CSI 序列及其参数 |
 | `ESCAPE_INTRODUCER_` | 各类控制序列引导符 |
@@ -297,9 +297,8 @@ EST_ST_STR()                        /* ST */
 | 字符串化/连接 | `ESCAPE_S`, `ESCAPE_C` | 两级展开后字符串化或 token 粘合 |
 | 参数展开 | `ESCAPE_X`, `ESCAPE_X_ARG_CNT` | 按参数数量选择宏，当前支持 0 到 7 个参数 |
 | 拼接 | `ESCAPE_JOIN`, `ESCAPE_JOINS` | 分别拼接字符串参数或先字符串化后拼接 |
-| 条件/选择 | `ESCAPE_SELECT`, `ESCAPE_IF_DO`, `ESCAPE_IF_ELSE_DO` | 表达式或语句形式的条件工具 |
 | 范围/数值 | `ESCAPE_MIN`, `ESCAPE_MAX`, `ESCAPE_CLAMP`, `ESCAPE_IN_RANGE`, `ESCAPE_ROUND_DIV` | 常用数值操作 |
-| 日志 | `ESCAPE_LOG_ERROR`, `ESCAPE_LOG_WARNING`, `ESCAPE_LOG_INFO`, `ESCAPE_LOG_DEBUG` | 输出到 `stderr`；错误和 TODO 会 `abort` |
+| 诊断 | `ESCAPE_ASSERT`, `ESCAPE_TODO` | 输出诊断信息到 `stderr`，触发时调用 `abort` |
 
 `ESCAPE_SAFE_*` 版本会先保存参数，避免同一参数被宏重复求值；它们使用 GNU
 statement expression 扩展。默认别名 `ESCAPE_MIN`、`ESCAPE_MAX` 等指向
@@ -318,7 +317,7 @@ statement expression 扩展。默认别名 `ESCAPE_MIN`、`ESCAPE_MAX` 等指向
    同步输出和查询命令，应结合目标终端文档测试。
 6. 颜色是否生效由终端和输出环境决定。本库不会检查 `TERM`、`COLORTERM`，也不
    会自动禁用颜色。
-7. `ESCAPE_DEBUG` 默认为 `1`；定义为 `0` 后，`ESCAPE_LOG_DEBUG` 会展开为空操作。
+7. `ESCAPE_ASSERT` 和 `ESCAPE_TODO` 会向 `stderr` 输出诊断信息；触发后调用 `abort`。
 
 ## 验证与项目状态
 

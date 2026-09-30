@@ -145,7 +145,7 @@ fputs(EST_CSI_SGR_SSTR(EST_CSI_SGR_BOLD) "bold" EST_CSI_SGR_SSTR(EST_CSI_SGR_RES
 
 | Prefix | Purpose |
 | --- | --- |
-| `ESCAPE_` | Preprocessor utilities, I/O/logging wrappers, and general helpers |
+| `ESCAPE_` | Preprocessor utilities, assertions, TODO handling, and numeric helpers |
 | `EST_` | Sequence types, parameters, final bytes, and sequence builders |
 | `EST_CSI_` | CSI sequences and their parameters |
 | `ESCAPE_INTRODUCER_` | Introducers for the supported sequence families |
@@ -305,9 +305,8 @@ The header also includes preprocessor utilities unrelated to terminal sequences:
 | Stringizing/concatenation | `ESCAPE_S`, `ESCAPE_C` | Expand before stringizing or paste tokens |
 | Argument dispatch | `ESCAPE_X`, `ESCAPE_X_ARG_CNT` | Select a macro by argument count, currently 0 through 7 |
 | Joining | `ESCAPE_JOIN`, `ESCAPE_JOINS` | Join string arguments, or stringify before joining |
-| Conditions/selection | `ESCAPE_SELECT`, `ESCAPE_IF_DO`, `ESCAPE_IF_ELSE_DO` | Expression and statement-style condition helpers |
 | Ranges/numeric helpers | `ESCAPE_MIN`, `ESCAPE_MAX`, `ESCAPE_CLAMP`, `ESCAPE_IN_RANGE`, `ESCAPE_ROUND_DIV` | Common numeric operations |
-| Logging | `ESCAPE_LOG_ERROR`, `ESCAPE_LOG_WARNING`, `ESCAPE_LOG_INFO`, `ESCAPE_LOG_DEBUG` | Write to `stderr`; error and TODO levels abort |
+| Diagnostics | `ESCAPE_ASSERT`, `ESCAPE_TODO` | Write a diagnostic to `stderr` and abort |
 
 `ESCAPE_SAFE_*` variants first store their arguments, avoiding repeated evaluation. They
 use the GNU statement-expression extension. The default aliases `ESCAPE_MIN`,
@@ -330,7 +329,8 @@ side effects require care.
    target terminal.
 6. Whether colors work depends on the terminal and output environment. The library does
    not inspect `TERM` or `COLORTERM` and does not disable color automatically.
-7. `ESCAPE_DEBUG` defaults to `1`; defining it as `0` makes `ESCAPE_LOG_DEBUG` a no-op.
+7. `ESCAPE_ASSERT` and `ESCAPE_TODO` write diagnostics to `stderr` and terminate the
+  process with `abort()` when triggered.
 
 ## Verification and Project Status
 
