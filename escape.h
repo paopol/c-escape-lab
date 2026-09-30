@@ -1,10 +1,8 @@
 #ifndef ESCAPE_H
 #define ESCAPE_H
 
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 
 #define ESCAPE_ESCAPE
@@ -186,8 +184,12 @@ extern "C" {
 #define ESCAPE_X_DISPATCH(...) ESCAPE_X_DISPATCH_I(__VA_ARGS__)
 #define ESCAPE_X_ARG_CNT(...) \
     ESCAPE_X_DISPATCH(_ ESCAPE_COMMA_VA_ARGS(__VA_ARGS__), 7, 6, 5, 4, 3, 2, 1, 0)
+#define ESCAPE_X_NAME(_prefix, ...) \
+    ESCAPE_C(_prefix, ESCAPE_X_ARG_CNT(__VA_ARGS__))
+#define ESCAPE_X_I(...) \
+    ESCAPE_X_NAME(__VA_ARGS__)
 #define ESCAPE_X(_prefix, ...) \
-    ESCAPE_C(_prefix, ESCAPE_X_ARG_CNT(__VA_ARGS__))(__VA_ARGS__)
+    ESCAPE_X_I(_prefix ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))(__VA_ARGS__)
 
 /* ABOUT `JOIN` */
 
@@ -212,130 +214,24 @@ extern "C" {
 #define ESCAPE_JOINS_6(_separator, _1, _2, _3, _4, _5, _6)       ESCAPE_S(_1) _separator ESCAPE_S(_2) _separator ESCAPE_S(_3) _separator ESCAPE_S(_4) _separator ESCAPE_S(_5) _separator ESCAPE_S(_6)
 #define ESCAPE_JOINS_7(_separator, _1, _2, _3, _4, _5, _6, _7)   ESCAPE_S(_1) _separator ESCAPE_S(_2) _separator ESCAPE_S(_3) _separator ESCAPE_S(_4) _separator ESCAPE_S(_5) _separator ESCAPE_S(_6) _separator ESCAPE_S(_7)
 
-/* ABOUT `DECL COPY` */
-
-#define ESCAPE_DECL_COPY(_x, x) ESCAPE_TYPEOF(x) _x = x
-#define ESCAPE_DECL_COPY2(x)    ESCAPE_TYPEOF(x) _##x = x
-
-/* ABOUT `EXPRESSION : WITH RETURN VALUE` */
-
-#define ESCAPE_TO_BOOL(_x) (!!(_x))
-#define ESCAPE_UNSAFE_SIGN_OF(_x) (((_x) > 0) ? 1 : (((_x) < 0) ? -1 : 0))
-#define ESCAPE_SAFE_SIGN_OF(_x) ({ ESCAPE_TYPEOF(_x) _x_ = (_x); _x_ > 0 ? 1 : (_x_ < 0 ? -1 : 0); })
-#define ESCAPE_SIGN_OF_TO(_x, _out) do { ESCAPE_TYPEOF(_x) _x_ = (_x); (_out) = (_x_ > 0 ? 1 : (_x_ < 0 ? -1 : 0)); } while (0)
-#define ESCAPE_SIGN_OF ESCAPE_UNSAFE_SIGN_OF
-
-#define ESCAPE_SELECT(_condition, _then, _else) \
-    ((_condition) ? (_then) : (_else))
-#define ESCAPE_SELECT_TO_BOOL(_condition, _then, _else) \
-    ((_condition) ? (!!(_then)) : (!!(_else)))
-#define ESCAPE_UNSAFE_SELECT_SIGN(_x, _positive, _zero, _negative) \
-    (((_x) > 0) ? (_positive) : (((_x) < 0) ? (_negative) : (_zero)))
-#define ESCAPE_SAFE_SELECT_SIGN(_x, _positive, _zero, _negative) \
-    ({ ESCAPE_TYPEOF(_x) _x_ = (_x); _x_ > 0 ? (_positive) : (_x_ < 0 ? (_negative) : (_zero)); })
-#define ESCAPE_SELECT_SIGN_TO(_x, _positive, _zero, _negative, _out) \
-    do { ESCAPE_TYPEOF(_x) _x_ = (_x); (_out) = (_x_ > 0 ? (_positive) : (_x_ < 0 ? (_negative) : (_zero))); } while (0)
-#define ESCAPE_SELECT_SIGN ESCAPE_UNSAFE_SELECT_SIGN
-
-/* ABOUT `STATEMENT : NO RETURN VALUE` */
-
-#define ESCAPE_IF_DO(_condition, _then) \
-    do { \
-        if (_condition) { \
-            _then; \
-        } \
-    } while (0)
-
-#define ESCAPE_IF_ELSE_DO(_condition, _then, _else) \
-    do { \
-        if (_condition) { \
-            _then; \
-        } else { \
-            _else; \
-        } \
-    } while (0)
-
-#define ESCAPE_UNSAFE_IF_SIGN_DO(_x, _positive, _zero, _negative) \
-    do { \
-        if ((_x) > 0) { \
-            _positive; \
-        } else if ((_x) < 0) { \
-            _negative; \
-        } else { \
-            _zero; \
-        } \
-    } while (0)
-#define ESCAPE_SAFE_IF_SIGN_DO(_x, _positive, _zero, _negative) \
-    do { \
-        ESCAPE_TYPEOF(_x) _x_ = (_x); \
-        if (_x_ > 0) { \
-            _positive; \
-        } else if (_x_ < 0) { \
-            _negative; \
-        } else { \
-            _zero; \
-        } \
-    } while (0)
-#define ESCAPE_IF_SIGN_DO ESCAPE_UNSAFE_IF_SIGN_DO
-
 /* ABOUT `ASSERT` */
 
 #define ESCAPE_ASSERT(_expression) \
     do { \
         if (!(_expression)) { \
-            fprintf(stderr, "%s:%d: assert: %s", __FILE__, __LINE__, ESCAPE_S(_expression)); \
+            fprintf(stderr, "%s:%d: [ASSERT]: %s", __FILE__, __LINE__, ESCAPE_S(_expression)); \
             abort(); \
         } \
     } while (0)
 
-/* ABOUT `LOG` */
-
-#define ESCAPE_SCAN_IN(_format, ...)        fscanf(stdin, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
-#define ESCAPE_PRINT_OUT(_format, ...)      fprintf(stdout, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
-#define ESCAPE_PRINT_ERROR(_format, ...)    fprintf(stderr, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
-
-#define ESCAPE_LOG_ERROR(_format, ...) \
-    do { \
-        fprintf(stderr, "%s:%d: error: ", __FILE__, __LINE__); \
-        fprintf(stderr, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__)); \
-        abort(); \
-    } while (0)
-
-#define ESCAPE_LOG_WARNING(_format, ...) \
-    do { \
-        fprintf(stderr, "%s:%d: warning: ", __FILE__, __LINE__); \
-        fprintf(stderr, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__)); \
-    } while (0)
-
-#define ESCAPE_LOG_INFO(_format, ...) \
-    do { \
-        fprintf(stderr, "%s:%d: info: ", __FILE__, __LINE__); \
-        fprintf(stderr, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__)); \
-    } while (0)
-
-#if ESCAPE_DEBUG
-#define ESCAPE_LOG_DEBUG(_format, ...) \
-    do { \
-        fprintf(stderr, "%s:%d: debug: ", __FILE__, __LINE__); \
-        fprintf(stderr, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__)); \
-    } while (0)
-#else
-#define ESCAPE_LOG_DEBUG(_format, ...) ESCAPE_EMPTY
-#endif
-
-#define ESCAPE_LOG_TODO(_format, ...) \
-    do { \
-        fprintf(stderr, "%s:%d: todo: ", __FILE__, __LINE__); \
-        fprintf(stderr, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__)); \
-        abort(); \
-    } while (0)
-
-#define ESCAPE_LOG(_level, _format, ...) \
-    ESCAPE_C(ESCAPE_LOG_, _level)(_format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
-
 /* ABOUT `TODO` */
 
-#define ESCAPE_TODO ESCAPE_LOG_TODO
+#define ESCAPE_TODO(_format, ...) \
+    do { \
+        fprintf(stderr, "%s:%d: [TODO]: ", __FILE__, __LINE__); \
+        fprintf(stderr, _format ESCAPE_COMMA_VA_ARGS(__VA_ARGS__)); \
+        abort(); \
+    } while (0)
 
 /* ABOUT `SIMPLE, COMMON` */
 
