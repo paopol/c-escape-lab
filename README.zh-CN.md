@@ -62,7 +62,8 @@
 
 ## 快速开始
 
-以下程序只依赖 `escape.h`，会输出橙色文字并恢复默认样式：
+下面的示例覆盖文本样式、光标控制、行编辑、256 色和真彩色等代表性功能。每个宏
+都会展开为字符串字面量，可以通过标准输出函数发送给终端。
 
 ```c
 #include <stdio.h>
@@ -70,12 +71,30 @@
 
 int main(void)
 {
-    printf(
-        EST_CSI_SGR_FC_EXT_TRUE_SSTR(255, 80, 20)
-        "orange text"
-        EST_CSI_SGR_SSTR(EST_CSI_SGR_RESET)
-        "\n"
-    );
+    /* 文本样式：COLORIZE_SSTR 会自动追加 SGR 重置序列。 */
+    printf("Styled text: " ESCAPE_COLORIZE_SSTR(
+        "bold green text",
+        EST_CSI_SGR_BOLD,
+        EST_CSI_SGR_FC_GREEN) "\n");
+
+    /* 光标控制：将光标向右移动五列。 */
+    printf("Cursor movement: ");
+    fputs(EST_CSI_CUF_SSTR(5), stdout);
+    puts("moved right");
+
+    /* 行编辑：擦除当前行后写入替换文本。 */
+    printf("Temporary line");
+    fputs(EST_CSI_EL_SSTR(2), stdout);
+    puts("Replaced line");
+
+    /* 字符串参数：COLORIZE_STR 会自动追加 SGR 重置序列。 */
+    printf("String-based red text: " ESCAPE_COLORIZE_STR("red", "31") "\n");
+
+    /* 256 色前景，并显式重置 SGR。 */
+    printf("256-color text: " EST_CSI_SGR_FC_EXT_256_SSTR(196) "sample" EST_CSI_SGR_SSTR(EST_CSI_SGR_RESET) "\n");
+
+    /* 真彩色前景，并显式重置 SGR。 */
+    printf("Truecolor text: " EST_CSI_SGR_FC_EXT_TRUE_SSTR(255, 80, 20) "sample" EST_CSI_SGR_SSTR(EST_CSI_SGR_RESET) "\n");
     return 0;
 }
 ```

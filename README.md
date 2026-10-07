@@ -63,8 +63,9 @@ The interface is header-only. Include `escape.h` directly.
 
 ## Quick Start
 
-The following program only depends on `escape.h`, prints colored text, and restores the
-normal SGR state:
+This example covers representative text styling, cursor control, line editing, 256-color,
+and truecolor operations. Each macro expands to a string literal that can be sent to the
+terminal through a standard output function.
 
 ```c
 #include <stdio.h>
@@ -72,12 +73,30 @@ normal SGR state:
 
 int main(void)
 {
-    printf(
-        EST_CSI_SGR_FC_EXT_TRUE_SSTR(255, 80, 20)
-        "orange text"
-        EST_CSI_SGR_SSTR(EST_CSI_SGR_RESET)
-        "\n"
-    );
+    /* Text styling: COLORIZE_SSTR appends the SGR reset sequence. */
+    printf("Styled text: " ESCAPE_COLORIZE_SSTR(
+        "bold green text",
+        EST_CSI_SGR_BOLD,
+        EST_CSI_SGR_FC_GREEN) "\n");
+
+    /* Cursor control: move the cursor five columns to the right. */
+    printf("Cursor movement: ");
+    fputs(EST_CSI_CUF_SSTR(5), stdout);
+    puts("moved right");
+
+    /* Line editing: erase the current line before writing replacement text. */
+    printf("Temporary line");
+    fputs(EST_CSI_EL_SSTR(2), stdout);
+    puts("Replaced line");
+
+    /* String parameters: COLORIZE_STR appends the SGR reset sequence. */
+    printf("String-based red text: " ESCAPE_COLORIZE_STR("red", "31") "\n");
+
+    /* 256-color foreground and an explicit SGR reset. */
+    printf("256-color text: " EST_CSI_SGR_FC_EXT_256_SSTR(196) "sample" EST_CSI_SGR_SSTR(EST_CSI_SGR_RESET) "\n");
+
+    /* Truecolor foreground and an explicit SGR reset. */
+    printf("Truecolor text: " EST_CSI_SGR_FC_EXT_TRUE_SSTR(255, 80, 20) "sample" EST_CSI_SGR_SSTR(EST_CSI_SGR_RESET) "\n");
     return 0;
 }
 ```
