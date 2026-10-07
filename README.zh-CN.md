@@ -32,6 +32,7 @@
   - [颜色接口](#颜色接口)
     - [SGR 基础样式和颜色](#sgr-基础样式和颜色)
     - [256 色和真彩色](#256-色和真彩色)
+    - [文本着色](#文本着色)
   - [基础序列构造器](#基础序列构造器)
   - [通用工具宏](#通用工具宏)
   - [兼容性与限制](#兼容性与限制)
@@ -70,7 +71,7 @@
 int main(void)
 {
     printf(
-        EST_CSI_SGR_FC_EXT_TRUE_STR(ESCAPE_SRGB(255, 80, 20))
+        EST_CSI_SGR_FC_EXT_TRUE_SSTR(255, 80, 20)
         "orange text"
         EST_CSI_SGR_SSTR(EST_CSI_SGR_RESET)
         "\n"
@@ -251,14 +252,15 @@ EST_CSI_SGR_SSTR(EST_CSI_SGR_RESET)
 EST_CSI_SGR_FC_EXT_256_STR("196")
 
 /* RGB(255, 0, 0) 的前景色 */
-EST_CSI_SGR_FC_EXT_TRUE_STR(ESCAPE_SRGB(255, 0, 0))
+EST_CSI_SGR_FC_EXT_TRUE_SSTR(255, 0, 0)
 
-/* 已经是字符串片段的 RGB 参数 */
-EST_CSI_SGR_FC_EXT_TRUE_STR("255;0;0")
+/* 以字符串片段提供 RGB 参数 */
+EST_CSI_SGR_TRUE_COLOR_EXT_STR("38", "255", "0", "0")
 ```
 
-注意：参数必须是字符串字面量或能参与字面量拼接的宏，不是运行时 `char *`
-变量。对于 token 形式的数字，也可以使用
+`EST_CSI_SGR_FC_EXT_TRUE_STR(r, g, b)` 接收可参与字面量拼接的字符串片段或数字
+字面量。对于预处理器 token，使用 `EST_CSI_SGR_FC_EXT_TRUE_SSTR(255, 0, 0)`；
+该 `_SSTR` 版本会分别将每个分量字符串化后再生成序列。对于 256 色索引，使用
 `EST_CSI_SGR_FC_EXT_256_SSTR(196)`。
 
 256 色辅助宏的范围如下：
@@ -271,6 +273,17 @@ EST_CSI_SGR_FC_EXT_TRUE_STR("255;0;0")
 
 这些宏只计算/拼接颜色参数，不验证输入是否在范围内；调用方应使用头文件提供的
 `*_IN_RANGE` 宏或自行校验。
+
+### 文本着色
+
+`ESCAPE_COLORIZE_STR(text, ...)` 接收字符串片段形式的 SGR 参数，
+`ESCAPE_COLORIZE_SSTR(text, ...)` 将预处理器 token 字符串化。两者都会在文本后
+追加 SGR 重置序列：
+
+```c
+ESCAPE_COLORIZE_STR("warning", "31")
+ESCAPE_COLORIZE_SSTR("success", EST_CSI_SGR_BOLD, EST_CSI_SGR_FC_GREEN)
+```
 
 ## 基础序列构造器
 
@@ -337,8 +350,8 @@ cc -std=gnu11 -Wall -Wextra -pedantic -fsyntax-only demo.c
 | 文件 | 状态 |
 | --- | --- |
 | [`escape.h`](escape.h) | 当前主要实现：工具宏、序列类型和 CSI 构造器 |
-| `README.md` | 英文项目入口文档和当前 API 使用说明 |
-| `README.zh-CN.md` | 中文项目入口文档 |
+| [`README.md`](README.md) | 英文项目入口文档和当前 API 使用说明 |
+| [`README.zh-CN.md`](README.zh-CN.md) | 中文项目入口文档 |
 
 以下接口不属于当前 API：OSC 语义包装、ESC 单字符语义包装、DCS 语义包装、
 运行时 I/O、终端能力检测和响应解析。

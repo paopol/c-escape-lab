@@ -32,6 +32,7 @@ The interface is header-only. Include `escape.h` directly.
   - [Color APIs](#color-apis)
     - [SGR styles and basic colors](#sgr-styles-and-basic-colors)
     - [256-color and truecolor](#256-color-and-truecolor)
+    - [Colorize text](#colorize-text)
   - [Low-Level Sequence Builders](#low-level-sequence-builders)
   - [General Utility Macros](#general-utility-macros)
   - [Compatibility and Limitations](#compatibility-and-limitations)
@@ -72,7 +73,7 @@ normal SGR state:
 int main(void)
 {
     printf(
-        EST_CSI_SGR_FC_EXT_TRUE_STR(ESCAPE_SRGB(255, 80, 20))
+        EST_CSI_SGR_FC_EXT_TRUE_SSTR(255, 80, 20)
         "orange text"
         EST_CSI_SGR_SSTR(EST_CSI_SGR_RESET)
         "\n"
@@ -259,14 +260,15 @@ Extended colors use either `CSI 38/48/58;5;n m` or `CSI 38/48/58;2;r;g;b m`:
 EST_CSI_SGR_FC_EXT_256_STR("196")
 
 /* Foreground RGB(255, 0, 0) */
-EST_CSI_SGR_FC_EXT_TRUE_STR(ESCAPE_SRGB(255, 0, 0))
+EST_CSI_SGR_FC_EXT_TRUE_SSTR(255, 0, 0)
 
-/* RGB parameters already supplied as a string fragment */
-EST_CSI_SGR_FC_EXT_TRUE_STR("255;0;0")
+/* RGB parameters supplied as string fragments */
+EST_CSI_SGR_TRUE_COLOR_EXT_STR("38", "255", "0", "0")
 ```
 
-The argument must be a string literal or a macro that participates in literal
-concatenation, not a runtime `char *` variable. For numeric tokens, use
+`EST_CSI_SGR_FC_EXT_TRUE_STR(r, g, b)` accepts string fragments. For preprocessor
+tokens or numeric literals, use `EST_CSI_SGR_FC_EXT_TRUE_SSTR(255, 0, 0)`. The
+`_SSTR` variant stringizes each component before building the sequence. For a 256-color index, use
 `EST_CSI_SGR_FC_EXT_256_SSTR(196)`.
 
 The 256-color helpers use these ranges:
@@ -279,6 +281,17 @@ The 256-color helpers use these ranges:
 
 These macros compose or calculate color parameters but do not validate input ranges.
 Use the provided `*_IN_RANGE` macros or validate inputs in the caller.
+
+### Colorize text
+
+`ESCAPE_COLORIZE_STR(text, ...)` accepts string fragments as SGR parameters, while
+`ESCAPE_COLORIZE_SSTR(text, ...)` stringizes preprocessor tokens. Both append an SGR
+reset sequence after the text:
+
+```c
+ESCAPE_COLORIZE_STR("warning", "31")
+ESCAPE_COLORIZE_SSTR("success", EST_CSI_SGR_BOLD, EST_CSI_SGR_FC_GREEN)
+```
 
 ## Low-Level Sequence Builders
 
@@ -351,8 +364,8 @@ is not a sufficient validation method.
 | File | Status |
 | --- | --- |
 | [`escape.h`](escape.h) | Current implementation: utility macros, sequence types, and CSI builders |
-| `README.md` | English project entry point and current API guide |
-| `README.zh-CN.md` | Simplified Chinese project entry point |
+| [`README.md`](README.md) | English project entry point and current API guide |
+| [`README.zh-CN.md`](README.zh-CN.md) | Simplified Chinese project entry point |
 
 The following interfaces are not part of the current API: OSC semantic wrappers, ESC
 single-character wrappers, DCS semantic wrappers, runtime I/O, terminal capability
