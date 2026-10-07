@@ -306,20 +306,20 @@ enum ESCAPE_SEQUENCE_TYPE
 
 #pragma region "ESCAPE BASIC"
 
-#define ESC_VAL_H       0x1b
-#define ESC_RAW_H       \x1b
-#define ESC_CHR_H       '\x1b'
-#define ESC_STR_H       "\x1b"
+#define ESC_VAL_HEX     0x1b
+#define ESC_RAW_HEX     \x1b
+#define ESC_CHR_HEX     '\x1b'
+#define ESC_STR_HEX     "\x1b"
 
-#define ESC_VAL_O       033
-#define ESC_RAW_O       \033
-#define ESC_CHR_O       '\033'
-#define ESC_STR_O       "\033"
+#define ESC_VAL_OCT     033
+#define ESC_RAW_OCT     \033
+#define ESC_CHR_OCT     '\033'
+#define ESC_STR_OCT     "\033"
 
-#define ESC_VAL_DEF     ESC_VAL_H
-#define ESC_RAW_DEF     ESC_RAW_H
-#define ESC_CHR_DEF     ESC_CHR_H
-#define ESC_STR_DEF     ESC_STR_H
+#define ESC_VAL_DEF     ESC_VAL_HEX
+#define ESC_RAW_DEF     ESC_RAW_HEX
+#define ESC_CHR_DEF     ESC_CHR_HEX
+#define ESC_STR_DEF     ESC_STR_HEX
 
 #define ESC_ESC(_)      ESC_STR_DEF _
 
