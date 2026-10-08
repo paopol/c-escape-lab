@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 
+/* Header presence marker: user code can test `#ifdef ESCAPE_ESCAPE` to detect this header. */
 #define ESCAPE_ESCAPE
 
 #ifndef ESCAPE_DEBUG
@@ -89,7 +90,9 @@ extern "C" {
 
 
 
-#pragma region "ESCAPE UTIL"
+/* ============================================================================
+ * ESCAPE UTIL
+ * ============================================================================ */
 
 /* ABOUT `...` */
 
@@ -209,6 +212,18 @@ extern "C" {
 #define ESCAPE_JOINS_6(_separator, _1, _2, _3, _4, _5, _6)       ESCAPE_S(_1) _separator ESCAPE_S(_2) _separator ESCAPE_S(_3) _separator ESCAPE_S(_4) _separator ESCAPE_S(_5) _separator ESCAPE_S(_6)
 #define ESCAPE_JOINS_7(_separator, _1, _2, _3, _4, _5, _6, _7)   ESCAPE_S(_1) _separator ESCAPE_S(_2) _separator ESCAPE_S(_3) _separator ESCAPE_S(_4) _separator ESCAPE_S(_5) _separator ESCAPE_S(_6) _separator ESCAPE_S(_7)
 
+/* ABOUT `RGB` */
+
+#define ESCAPE_RGB(R, G, B)     R ";" G ";" B
+#define ESCAPE_SRGB(R, G, B)    ESCAPE_S(R) ";" ESCAPE_S(G) ";" ESCAPE_S(B)
+
+/* ABOUT `SEMICOLON JOIN` */
+
+#define ESCAPE_JOIN_SEMICOLON_I(...)    ESCAPE_JOIN(__VA_ARGS__)
+#define ESCAPE_JOIN_SEMICOLON(...)      ESCAPE_JOIN_SEMICOLON_I(";" ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
+#define ESCAPE_JOINS_SEMICOLON_I(...)   ESCAPE_JOINS(__VA_ARGS__)
+#define ESCAPE_JOINS_SEMICOLON(...)     ESCAPE_JOINS_SEMICOLON_I(";" ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
+
 /* ABOUT `ASSERT` */
 
 #define ESCAPE_ASSERT(_expression) \
@@ -228,7 +243,7 @@ extern "C" {
         abort(); \
     } while (0)
 
-/* ABOUT `SIMPLE, COMMON` */
+/* ABOUT `SIMPLE and COMMON` */
 
 #define ESCAPE_UNSAFE_MIN(a, b)         ((a) < (b) ? (a) : (b))
 #define ESCAPE_SAFE_MIN(a, b)           ({ ESCAPE_TYPEOF(a) _a = (a); ESCAPE_TYPEOF(b) _b = (b); _a < _b ? _a : _b; })
@@ -250,21 +265,12 @@ extern "C" {
 #define ESCAPE_SAFE_ROUND_DIV(a, b)     ({ ESCAPE_TYPEOF(a) _a = (a); ESCAPE_TYPEOF(b) _b = (b); _a >= 0 ? ((_a + _b / 2) / _b) : ((_a - _b / 2) / _b); })
 #define ESCAPE_ROUND_DIV ESCAPE_UNSAFE_ROUND_DIV
 
-#pragma endregion "ESCAPE UTIL"
 
-
-
-#pragma region "ESCAPE SEQUENCE TYPE (EST)"
+/* ============================================================================
+ * ESCAPE SEQUENCE TYPE (EST)
+ * ============================================================================ */
 
 #define EST_BLOCK_OFFSET 0x0100
-
-#define ESCAPE_RGB(R, G, B)     R ";" G ";" B
-#define ESCAPE_SRGB(R, G, B)    ESCAPE_S(R) ";" ESCAPE_S(G) ";" ESCAPE_S(B)
-
-#define ESCAPE_JOIN_SEMICOLON_I(...)    ESCAPE_JOIN(__VA_ARGS__)
-#define ESCAPE_JOIN_SEMICOLON(...)      ESCAPE_JOIN_SEMICOLON_I(";" ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
-#define ESCAPE_JOINS_SEMICOLON_I(...)   ESCAPE_JOINS(__VA_ARGS__)
-#define ESCAPE_JOINS_SEMICOLON(...)     ESCAPE_JOINS_SEMICOLON_I(";" ESCAPE_COMMA_VA_ARGS(__VA_ARGS__))
 
 enum ESCAPE_SEQUENCE_TYPE_ORDER
 {
@@ -300,11 +306,10 @@ enum ESCAPE_SEQUENCE_TYPE
     EST_NUMS = ESTO_NUMS
 };
 
-#pragma endregion "ESCAPE SEQUENCE TYPE (EST)"
 
-
-
-#pragma region "ESCAPE BASIC"
+/* ============================================================================
+ * ESCAPE BASIC
+ * ============================================================================ */
 
 #define ESC_VAL_HEX     0x1b
 #define ESC_RAW_HEX     \x1b
@@ -371,13 +376,14 @@ enum ESCAPE_SEQUENCE_TYPE
 /* Privacy Message */
 #define EST_PM_STR(D)               ESCAPE_INTRODUCER_PM D ESCAPE_INTRODUCER_ST
 
-#pragma endregion "ESCAPE BASIC"
 
+/* ============================================================================
+ * EST CSI
+ * ============================================================================ */
 
-
-#pragma region "EST CSI"
-
-#pragma region "EST CSI TYPE"
+/* ============================================================================
+ * EST CSI TYPE
+ * ============================================================================ */
 
 enum EST_CSI_TYPE
 {
@@ -432,7 +438,7 @@ enum EST_CSI_TYPE
     EST_CSI_CPR,        /* Cursor Position Report */
     EST_CSI_DA1,        /* Primary Device Attributes */
     EST_CSI_DA2,        /* Secondary Device Attributes */
-    EST_CSI_XTVERSION,  /* XTerminal Version */
+    EST_CSI_XTVERSION,  /* Xterm Version */
 
     /* SCROLL REGION AND MARGIN */
 
@@ -442,8 +448,6 @@ enum EST_CSI_TYPE
     /* TAB(TABULATION) */
 
     EST_CSI_TBC,        /* Tab Clear */
-    // EST_CSI_CHT,        /* Cursor Forward Tabulation */
-    // EST_CSI_CBT,        /* Cursor Backward Tabulation */
 
     /* WINDOW OPERATION */
 
@@ -451,21 +455,21 @@ enum EST_CSI_TYPE
 
     EST_CSI_DECSTR,     /* Soft Terminal Reset */
     EST_CSI_DECSCUSR,   /* Set Cursor Style */
-    EST_CSI_DECSCA,     /* Set Character Attribute */
+    EST_CSI_DECSCA,     /* Select Character Attribute */
     EST_CSI_DECRQM,     /* Request Mode */
 
     /* EST CSI END */
 
     EST_CSI_END,
-    
+
     /* NUMBER OF CSI SUPPORTED */
 
     EST_CSI_NUMS = (EST_CSI_END - 1 - EST_CSI_BEGIN)
 };
 
-#pragma endregion "EST CSI TYPE"
-
-#pragma region "EST CSI SGR PARAMS"
+/* ============================================================================
+ * EST CSI SGR PARAMS
+ * ============================================================================ */
 
 /* SGR COMMON ATTRIBUTES */
 
@@ -546,9 +550,9 @@ enum EST_CSI_TYPE
 #define EST_CSI_SGR_BBC_CYAN                    106
 #define EST_CSI_SGR_BBC_WHITE                   107
 
-#pragma endregion "EST CSI SGR PARAMS"
-
-#pragma region "EST CSI SGR 256 COLORS"
+/* ============================================================================
+ * EST CSI SGR 256 COLORS
+ * ============================================================================ */
 
 /* STANDARD ANSI COLORS (BY TERMINAL THEME) */
 
@@ -608,9 +612,9 @@ static const int EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[] = {0, 95, 135, 175
 #define EST_CSI_SGR_256_COLOR_GRAYSCALE_I_IN_RANGE(i)           ESCAPE_IN_RANGE(i, EST_CSI_SGR_256_COLOR_GRAYSCALE_MIN_I, EST_CSI_SGR_256_COLOR_GRAYSCALE_MAX_I)
 #define EST_CSI_SGR_256_COLOR_GRAYSCALE_INDEX_IN_RANGE(index)   ESCAPE_IN_RANGE(index, EST_CSI_SGR_256_COLOR_GRAYSCALE_MIN_INDEX, EST_CSI_SGR_256_COLOR_GRAYSCALE_MAX_INDEX)
 
-#pragma endregion "EST CSI SGR 256 COLORS"
-
-#pragma region "EST CSI SM/RM PARAMS"
+/* ============================================================================
+ * EST CSI SM/RM PARAMS
+ * ============================================================================ */
 
 /* ANSI STANDARD MODE */
 
@@ -625,22 +629,22 @@ static const int EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[] = {0, 95, 135, 175
 #define EST_CSI_SM_RM_DECOM     6
 #define EST_CSI_SM_RM_DECAWM    7
 #define EST_CSI_SM_RM_DECTCEM   25
-#define EST_CSI_SM_RM_MODE_47   47
+#define EST_CSI_SM_RM_MODE_47   47   /* Alternate Screen Buffer */
 #define EST_CSI_SM_RM_DECLRMM   69
-#define EST_CSI_SM_RM_MODE_1000 1000
-#define EST_CSI_SM_RM_MODE_1002 1002
-#define EST_CSI_SM_RM_MODE_1003 1003
-#define EST_CSI_SM_RM_MODE_1004 1004
-#define EST_CSI_SM_RM_MODE_1006 1006
-#define EST_CSI_SM_RM_MODE_1047 1047
-#define EST_CSI_SM_RM_MODE_1048 1048
-#define EST_CSI_SM_RM_MODE_1049 1049
-#define EST_CSI_SM_RM_MODE_2004 2004
-#define EST_CSI_SM_RM_MODE_2026 2026
+#define EST_CSI_SM_RM_MODE_1000 1000 /* Normal Tracking Mode (X10 mouse) */
+#define EST_CSI_SM_RM_MODE_1002 1002 /* Button-Event Tracking Mode */
+#define EST_CSI_SM_RM_MODE_1003 1003 /* Any-Event Tracking Mode */
+#define EST_CSI_SM_RM_MODE_1004 1004 /* Focus In/Out Event Mode */
+#define EST_CSI_SM_RM_MODE_1006 1006 /* SGR Mouse Mode (Extended Coordinates) */
+#define EST_CSI_SM_RM_MODE_1047 1047 /* Alternate Screen Buffer */
+#define EST_CSI_SM_RM_MODE_1048 1048 /* Save Cursor */
+#define EST_CSI_SM_RM_MODE_1049 1049 /* Save Cursor and Alternate Screen Buffer */
+#define EST_CSI_SM_RM_MODE_2004 2004 /* Bracketed Paste Mode */
+#define EST_CSI_SM_RM_MODE_2026 2026 /* Synchronized Output Mode */
 
-#pragma endregion "EST CSI SM/RM PARAMS"
-
-#pragma region "EST CSI FINAL STRING"
+/* ============================================================================
+ * EST CSI FINAL STRING
+ * ============================================================================ */
 
 #define EST_CSI_CUU_FS          "A"
 #define EST_CSI_CUD_FS          "B"
@@ -685,17 +689,15 @@ static const int EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[] = {0, 95, 135, 175
 #define EST_CSI_DECSLRM_FS      "s"
 
 #define EST_CSI_TBC_FS          "g"
-// #define EST_CSI_CHT_FS          "I"
-// #define EST_CSI_CBT_FS          "Z"
 
 #define EST_CSI_DECSTR_FS       "p"
 #define EST_CSI_DECSCUSR_FS     "q"
 #define EST_CSI_DECSCA_FS       "q"
 #define EST_CSI_DECRQM_FS       "p"
 
-#pragma endregion "EST CSI FINAL STRING"
-
-#pragma region "EST CSI STRING"
+/* ============================================================================
+ * EST CSI STRING
+ * ============================================================================ */
 
 #define EST_CSI_CUU_STR(Ps)         EST_CSI_NOI_STR(Ps, EST_CSI_CUU_FS)
 #define EST_CSI_CUD_STR(Ps)         EST_CSI_NOI_STR(Ps, EST_CSI_CUD_FS)
@@ -710,13 +712,15 @@ static const int EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[] = {0, 95, 135, 175
 #define EST_CSI_CHT_STR(Ps)         EST_CSI_NOI_STR(Ps, EST_CSI_CHT_FS)
 #define EST_CSI_CBT_STR(Ps)         EST_CSI_NOI_STR(Ps, EST_CSI_CBT_FS)
 /**
- * When it is disabled by default or set to `?69`: Save cursor position (SCP).
- * After enabling the left and right margin mode (DECLRMM) with `?69h`: it is interpreted as DECSLRM, which sets the left and right margins.
+ * With the left/right margin mode (DECLRMM, `?69`) disabled (the default), this
+ * sequence saves the cursor position (SCP). When DECLRMM is enabled with `?69h`,
+ * the same `CSI s` is interpreted as DECSLRM, which sets the left/right margins.
  */
 #define EST_CSI_SCP_STR()           EST_CSI_NOPI_STR(EST_CSI_SCP_FS)
 /**
- * Traditional: Restore cursor position (RCP).
- * Modern terminals: They may be occupied by extensions such as the Kitty keyboard protocol, and the specific implementation depends on the terminal.
+ * Traditionally this restores the cursor position (RCP). On some modern
+ * terminals, `CSI u` is reassigned by extensions (e.g. the Kitty keyboard
+ * protocol), so the actual behavior depends on the terminal.
  */
 #define EST_CSI_RCP_STR()           EST_CSI_NOPI_STR(EST_CSI_RCP_FS)
 #define EST_CSI_DECSC_STR()         EST_ESC_NOI_STR(EST_CSI_DECSC_FS)
@@ -801,14 +805,14 @@ static const int EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[] = {0, 95, 135, 175
 
 #define EST_CSI_DECSTR_STR()                        EST_CSI_NOP_STR("!", EST_CSI_DECSTR_FS)
 /**
- * Ps: Used to specify the shape and blinking state of the cursor.
- * - 0: Usually in the form of flickering blocks (default).
- * - 1: Block.
- * - 2: Stable Block.
- * - 3: Underline.
- * - 4: Stable Underline.
- * - 5: Vertical Line.
- * - 6: Stable Vertical Line.
+ * Ps: Cursor shape and blinking state.
+ * - 0: Blinking block (default).
+ * - 1: Blinking block.
+ * - 2: Steady block.
+ * - 3: Blinking underline.
+ * - 4: Steady underline.
+ * - 5: Blinking vertical bar.
+ * - 6: Steady vertical bar.
  */
 #define EST_CSI_DECSCUSR_STR(Ps)                    EST_CSI_STR(Ps, " ", EST_CSI_DECSCUSR_FS)
 /**
@@ -822,7 +826,9 @@ static const int EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[] = {0, 95, 135, 175
 #define EST_CSI_DECRQM_ANSI_STANDARD_MODE_STR(Ps)   EST_CSI_DECRQM_STR("" Ps)
 #define EST_CSI_DECRQM_DEC_PRIVATE_MODE_STR(Ps)     EST_CSI_DECRQM_STR("?" Ps)
 
-#pragma region "EST CSI DEFAULT STRING"
+/* ============================================================================
+ * EST CSI DEFAULT STRING
+ * ============================================================================ */
 
 #define EST_CSI_CUU_DEFAULT_STR()       EST_CSI_CUU_STR("1")
 #define EST_CSI_CUD_DEFAULT_STR()       EST_CSI_CUD_STR("1")
@@ -853,9 +859,9 @@ static const int EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[] = {0, 95, 135, 175
 #define EST_CSI_DECSCUSR_DEFAULT_STR()  EST_CSI_DECSCUSR_STR("0")
 #define EST_CSI_DECSCA_DEFAULT_STR()    EST_CSI_DECSCA_STR("0")
 
-#pragma endregion "EST CSI DEFAULT STRING"
-
-#pragma region "EST CSI SSTR"
+/* ============================================================================
+ * EST CSI SSTR
+ * ============================================================================ */
 
 #define EST_CSI_CUU_SSTR(Ps)        EST_CSI_CUU_STR(ESCAPE_S(Ps))
 #define EST_CSI_CUD_SSTR(Ps)        EST_CSI_CUD_STR(ESCAPE_S(Ps))
@@ -887,26 +893,15 @@ static const int EST_CSI_SGR_256_COLOR_666_COLOR_CUBE_LEVEL[] = {0, 95, 135, 175
 #define EST_CSI_SM_SSTR(Ps)         EST_CSI_SM_STR(ESCAPE_S(Ps))
 #define EST_CSI_RM_SSTR(Ps)         EST_CSI_RM_STR(ESCAPE_S(Ps))
 
-#pragma endregion "EST CSI SSTR"
 
-#pragma endregion "EST CSI STRING"
-
-#pragma endregion "EST CSI"
-
-
-
-#pragma region "ESCAPE FUNCTION"
-
-#pragma region "ESCAPE COLOR"
+/* ============================================================================
+ * ESCAPE COLORIZE
+ * ============================================================================ */
 
 #define ESCAPE_COLORIZE_STR(text, ...) \
     EST_CSI_SGR_STR(ESCAPE_JOIN_SEMICOLON(__VA_ARGS__)) text EST_CSI_SGR_STR(ESCAPE_S(EST_CSI_SGR_RESET))
 #define ESCAPE_COLORIZE_SSTR(text, ...) \
     EST_CSI_SGR_STR(ESCAPE_JOINS_SEMICOLON(__VA_ARGS__)) text EST_CSI_SGR_STR(ESCAPE_S(EST_CSI_SGR_RESET))
-
-#pragma endregion "ESCAPE COLOR"
-
-#pragma endregion "ESCAPE FUNCTION"
 
 
 #ifdef __cplusplus
