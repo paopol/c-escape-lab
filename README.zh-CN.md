@@ -361,7 +361,7 @@ ESC 字节有十六进制（`_HEX`）与八进制（`_OCT`）两套，`ESC_*_DEF
 
 ## 贡献指南
 
-欢迎提交 Issue 和 Pull Request。新增宏请遵循现有命名规范（`ESCAPE_*` / `EST_*` / `EST_CSI_*`），并同步更新本文档的 API Reference 部分。
+欢迎提交 Issue 和 Pull Request。新增宏请遵循现有命名规范（`ESCAPE_*` / `EST_*` / `EST_CSI_*`），并同步更新本文档的 API 参考部分。
 
 ## 许可证
 
