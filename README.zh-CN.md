@@ -63,7 +63,7 @@ cc -std=gnu11 -Wall -Wextra -pedantic demo.c -o demo
 ./demo
 ```
 
-更完整的展示程序见 [`examples/demo.c`](examples/demo.c)（即顶部截图中的程序）。
+更多主题示例（颜色、光标、擦除、模式、底层构造器）见 [`examples/`](examples/)；在该目录下执行 `make` 一键编译、`make run` 运行。
 
 ## 用法
 
@@ -128,7 +128,7 @@ fputs(buf, stdout);
 
 ### ESC 常量与引导符
 
-ESC 字节有十六进制（`_HEX`）与八进制（`_OCT`）两套，`_DEF` 默认指向十六进制：
+ESC 字节有十六进制（`_HEX`）与八进制（`_OCT`）两套，`ESC_*_DEF` 默认指向 `_HEX` 版本：
 
 | 十六进制 | 值 | 八进制 | 值 |
 | --- | --- | --- | --- |
@@ -136,7 +136,6 @@ ESC 字节有十六进制（`_HEX`）与八进制（`_OCT`）两套，`_DEF` 默
 | `ESC_RAW_HEX` | `\x1b` | `ESC_RAW_OCT` | `\033` |
 | `ESC_CHR_HEX` | `'\x1b'` | `ESC_CHR_OCT` | `'\033'` |
 | `ESC_STR_HEX` | `"\x1b"` | `ESC_STR_OCT` | `"\033"` |
-| `ESC_VAL_DEF` / `ESC_RAW_DEF` / `ESC_CHR_DEF` / `ESC_STR_DEF` | 指向 `_HEX` | | |
 
 引导符：
 
@@ -189,7 +188,7 @@ ESC 字节有十六进制（`_HEX`）与八进制（`_OCT`）两套，`_DEF` 默
 
 `EST_CSI_TYPE` 从 `EST_CSI`（`0x200`）开始逐个列出所有 CSI 类型（`CUU`、`CUD` … `DECRQM`），以 `EST_CSI_END` / `EST_CSI_NUMS` 收尾。这些枚举目前主要用于预留编号与自描述，序列字符串仍由下面的宏生成。
 
-### CSI：光标 / 擦除 / 滚动
+### CSI 序列
 
 表内 `_SSTR` / `_DEFAULT` 列标记对应版本是否存在（`✓` 有 / `—` 无）。`_DEFAULT_STR` 显式填入协议默认参数（光标移动类默认 `1`，擦除类默认 `0` 或 `1`，`TBC` 默认 `0`，`DECSCUSR`/`DECSCA` 默认 `0`）。
 
@@ -233,7 +232,7 @@ ESC 字节有十六进制（`_HEX`）与八进制（`_OCT`）两套，`_DEF` 默
 | `EST_CSI_DECSLRM_STR(Pl, Pr)` | — | — | `CSI Pl;Pr s` | 设置左右边距（需先 `?69h`） |
 | `EST_CSI_TBC_STR(Ps)` | — | ✓ | `CSI Ps g` | 清制表位：`0` 当前、`3` 全部 |
 | `EST_CSI_DECSTR_STR()` | — | — | `CSI ! p` | 软复位 |
-| `EST_CSI_DECSCUSR_STR(Ps)` | — | ✓ | `CSI Ps SP q` | 光标样式（`0` 闪块、`1` 块、`2` 稳定块、`3` 下划线、`4` 稳定下划线、`5` 竖线、`6` 稳定竖线） |
+| `EST_CSI_DECSCUSR_STR(Ps)` | — | ✓ | `CSI Ps SP q` | 光标样式（`0` 闪烁块（默认）、`1` 闪烁块、`2` 稳定块、`3` 闪烁下划线、`4` 稳定下划线、`5` 闪烁竖线、`6` 稳定竖线） |
 | `EST_CSI_DECSCA_STR(Ps)` | — | ✓ | `CSI Ps " q` | 选择性擦除保护（`0` 可擦、`1` 保护、`2` 同 `0`） |
 | `EST_CSI_DECRQM_STR(Ps)` | — | — | `CSI Ps $ p` | 请求模式（包装见下文） |
 
@@ -318,8 +317,8 @@ ESC 字节有十六进制（`_HEX`）与八进制（`_OCT`）两套，`_DEF` 默
 | `EST_CSI_SM_RM_DECTCEM` | 25 | 显示光标 |
 | `EST_CSI_SM_RM_MODE_47` | 47 | 备用屏幕 |
 | `EST_CSI_SM_RM_DECLRMM` | 69 | 左右边距模式 |
-| `EST_CSI_SM_RM_MODE_1000/1002/1003/1004/1006` | 1000/1002/1003/1004/1006 | 鼠标报告 |
-| `EST_CSI_SM_RM_MODE_1047/1048/1049` | 1047/1048/1049 | 备用屏幕 |
+| `EST_CSI_SM_RM_MODE_1000/1002/1003/1004/1006` | 1000/1002/1003/1004/1006 | 鼠标报告与焦点事件 |
+| `EST_CSI_SM_RM_MODE_1047/1048/1049` | 1047/1048/1049 | 备用屏幕与保存光标 |
 | `EST_CSI_SM_RM_MODE_2004` | 2004 | 括号粘贴 |
 | `EST_CSI_SM_RM_MODE_2026` | 2026 | 同步输出 |
 

@@ -69,8 +69,8 @@ cc -std=gnu11 -Wall -Wextra -pedantic demo.c -o demo
 ./demo
 ```
 
-A fuller showcase is in [`examples/demo.c`](examples/demo.c) — the program behind the
-screenshot above.
+More topic examples (colors, cursor, erase, modes, low-level builders) live in
+[`examples/`](examples/); run `make` to build them and `make run` to run them.
 
 ## Usage
 
@@ -145,8 +145,8 @@ See [API Reference](#api-reference) for the complete per-macro listing.
 
 ### ESC constants and introducers
 
-The ESC byte has hexadecimal (`_HEX`) and octal (`_OCT`) forms; `_DEF` aliases default to
-hexadecimal:
+The ESC byte has hexadecimal (`_HEX`) and octal (`_OCT`) forms; the `ESC_*_DEF` aliases
+default to the `_HEX` versions:
 
 | Hexadecimal | Value | Octal | Value |
 | --- | --- | --- | --- |
@@ -154,7 +154,6 @@ hexadecimal:
 | `ESC_RAW_HEX` | `\x1b` | `ESC_RAW_OCT` | `\033` |
 | `ESC_CHR_HEX` | `'\x1b'` | `ESC_CHR_OCT` | `'\033'` |
 | `ESC_STR_HEX` | `"\x1b"` | `ESC_STR_OCT` | `"\033"` |
-| `ESC_VAL_DEF` / `ESC_RAW_DEF` / `ESC_CHR_DEF` / `ESC_STR_DEF` | alias `_HEX` | | |
 
 Introducers:
 
@@ -212,7 +211,7 @@ each sequence family using `EST_BLOCK_OFFSET = 0x0100`:
 (`0x200`), ending with `EST_CSI_END` / `EST_CSI_NUMS`. These enums currently reserve numbers
 and self-describe the types; the sequence strings are still produced by the macros below.
 
-### CSI: cursor / erase / scroll
+### CSI sequences
 
 The `_SSTR` and `_DEFAULT` columns mark whether that variant exists (`✓` yes / `—` no).
 `_DEFAULT_STR` explicitly inserts the protocol's default parameter (cursor moves default to
@@ -258,7 +257,7 @@ The `_SSTR` and `_DEFAULT` columns mark whether that variant exists (`✓` yes /
 | `EST_CSI_DECSLRM_STR(Pl, Pr)` | — | — | `CSI Pl;Pr s` | Set left/right margins (needs `?69h` first) |
 | `EST_CSI_TBC_STR(Ps)` | — | ✓ | `CSI Ps g` | Clear tab stop: `0` current, `3` all |
 | `EST_CSI_DECSTR_STR()` | — | — | `CSI ! p` | Soft terminal reset |
-| `EST_CSI_DECSCUSR_STR(Ps)` | — | ✓ | `CSI Ps SP q` | Cursor style (`0` blink block, `1` block, `2` steady block, `3` underline, `4` steady underline, `5` bar, `6` steady bar) |
+| `EST_CSI_DECSCUSR_STR(Ps)` | — | ✓ | `CSI Ps SP q` | Cursor style (`0` blinking block (default), `1` blinking block, `2` steady block, `3` blinking underline, `4` steady underline, `5` blinking bar, `6` steady bar) |
 | `EST_CSI_DECSCA_STR(Ps)` | — | ✓ | `CSI Ps " q` | Selective-erase protection (`0` erasable, `1` protected, `2` same as `0`) |
 | `EST_CSI_DECRQM_STR(Ps)` | — | — | `CSI Ps $ p` | Request mode (wrappers below) |
 
@@ -344,8 +343,8 @@ Mode parameter constants (for `SM`/`RM`):
 | `EST_CSI_SM_RM_DECTCEM` | 25 | Show cursor |
 | `EST_CSI_SM_RM_MODE_47` | 47 | Alternate screen |
 | `EST_CSI_SM_RM_DECLRMM` | 69 | Left/right margin mode |
-| `EST_CSI_SM_RM_MODE_1000/1002/1003/1004/1006` | 1000/1002/1003/1004/1006 | Mouse reporting |
-| `EST_CSI_SM_RM_MODE_1047/1048/1049` | 1047/1048/1049 | Alternate screen |
+| `EST_CSI_SM_RM_MODE_1000/1002/1003/1004/1006` | 1000/1002/1003/1004/1006 | Mouse reporting and focus events |
+| `EST_CSI_SM_RM_MODE_1047/1048/1049` | 1047/1048/1049 | Alternate screen and save cursor |
 | `EST_CSI_SM_RM_MODE_2004` | 2004 | Bracketed paste |
 | `EST_CSI_SM_RM_MODE_2026` | 2026 | Synchronized output |
 
