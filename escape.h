@@ -340,6 +340,13 @@ enum ESCAPE_SEQUENCE_TYPE
 /* Privacy Message */
 #define ESCAPE_INTRODUCER_PM  ESC_ESC("^")
 
+/**
+ * P: Parameter bytes / Parameters
+ * I: Intermediate bytes
+ * F: Final byte
+ * D: Data bytes / Data string
+ */
+
 /* Escape */
 #define EST_ESC_STR(_I, F)          ESCAPE_INTRODUCER_ESC _I F
 #define EST_ESC_NOI_STR(F)          EST_ESC_STR("", F)
@@ -352,9 +359,9 @@ enum ESCAPE_SEQUENCE_TYPE
 #define EST_OSC_STR(S)              ESCAPE_INTRODUCER_OSC S ESCAPE_INTRODUCER_ST
 /* Device Control String */
 #define EST_DCS_STR(_P, _I, F, D)   ESCAPE_INTRODUCER_DCS _P _I F D ESCAPE_INTRODUCER_ST
-#define EST_DCS_NOP_STR(_I, F)      EST_DCS_STR("", _I, F)
-#define EST_DCS_NOI_STR(_P, F)      EST_DCS_STR(_P, "", F)
-#define EST_DCS_NOPI_STR(F)         EST_DCS_STR("", "", F)
+#define EST_DCS_NOP_STR(_I, F, D)   EST_DCS_STR("", _I, F, D)
+#define EST_DCS_NOI_STR(_P, F, D)   EST_DCS_STR(_P, "", F, D)
+#define EST_DCS_NOPI_STR(F, D)      EST_DCS_STR("", "", F, D)
 /* Application Program Command */
 #define EST_APC_STR(D)              ESCAPE_INTRODUCER_APC D ESCAPE_INTRODUCER_ST
 /* String Terminal */
