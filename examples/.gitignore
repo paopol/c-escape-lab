@@ -1,0 +1,7 @@
+# Built example binaries (bare names; *.exe is ignored by the repository root .gitignore)
+demo
+colors
+cursor
+erase
+modes
+lowlevel
