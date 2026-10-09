@@ -105,6 +105,22 @@ fputs(buf, stdout);
 Why this works: `EST_CSI_CUU_STR("%d")` expands to `"\x1b[%dA"`, and `snprintf` then
 substitutes `n` for `%d`.
 
+> **Note**: the `text` argument of `ESCAPE_COLORIZE_*` and all `*_STR` parameters must be
+> **string literals** (or macros that expand to literals), not `char *` variables —
+> `ESCAPE_COLORIZE_STR(text, ...)` expands to `"..." text "..."` via adjacent-literal
+> concatenation, so a variable is a compile error. For a runtime string, pass `"%s"` as the
+> text and use `printf`, or emit it in three `fputs` steps:
+
+```c
+/* One-liner: printf with a %s placeholder */
+printf(ESCAPE_COLORIZE_STR("%s", "31"), text);
+
+/* Or three fputs calls */
+fputs(EST_CSI_SGR_SSTR(EST_CSI_SGR_FC_RED), stdout);
+fputs(text, stdout);
+fputs(EST_CSI_SGR_SSTR(EST_CSI_SGR_RESET), stdout);
+```
+
 ### Capability overview
 
 | Category | Representative macros | Notes |

@@ -94,6 +94,18 @@ fputs(buf, stdout);
 
 原理：`EST_CSI_CUU_STR("%d")` 展开为 `"\x1b[%dA"`，随后由 `snprintf` 把 `%d` 替换成 `n`。
 
+> **注意**：`ESCAPE_COLORIZE_*` 的 `text` 以及所有 `*_STR` 的参数都必须是**字符串字面量**（或能展开为字面量的宏），不能传 `char *` 变量——`ESCAPE_COLORIZE_STR(text, ...)` 展开为 `"..." text "..."` 形式的相邻字面量拼接，传变量会导致编译错误。运行时字符串可传 `"%s"` 占位符并配合 `printf`，或分三段 `fputs` 输出：
+
+```c
+/* 一行：printf + %s 占位符 */
+printf(ESCAPE_COLORIZE_STR("%s", "31"), text);
+
+/* 或分三段 fputs */
+fputs(EST_CSI_SGR_SSTR(EST_CSI_SGR_FC_RED), stdout);
+fputs(text, stdout);
+fputs(EST_CSI_SGR_SSTR(EST_CSI_SGR_RESET), stdout);
+```
+
 ### 能力速览
 
 | 分类 | 代表性宏 | 说明 |
