@@ -1,8 +1,8 @@
 # Examples
 
 Each file is a self-contained program that demonstrates one area of
-[`escape.h`](../escape.h). Build them all with `make`, run with `make run`, or
-build a single one with `make <name>`.
+[`escape.h`](../escape.h). Build all with `make`, run all with `make run`, or
+target one with `make <name>` / `make run-<name>`.
 
 | File | Demonstrates |
 | --- | --- |
@@ -16,9 +16,11 @@ build a single one with `make <name>`.
 ## Build and run
 
 ```sh
-make          # build all examples
-make run      # build and run all examples
-make clean    # remove built files
+make              # build all examples
+make <name>       # build one example, e.g. `make colors`
+make run          # build and run all examples
+make run-<name>   # build and run one example, e.g. `make run-colors`
+make clean        # remove built files
 ```
 
 Build with Clang via `make CC=clang`.
