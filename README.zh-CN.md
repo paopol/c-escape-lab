@@ -198,7 +198,7 @@ ESC 字节有十六进制（`_HEX`）与八进制（`_OCT`）两套，`ESC_*_DEF
 | SOS | `ESTO_SOS` | `EST_SOS` | `0x700` |
 | PM | `ESTO_PM` | `EST_PM` | `0x800` |
 
-`EST_CSI_TYPE` 从 `EST_CSI`（`0x200`）开始逐个列出所有 CSI 类型（`CUU`、`CUD` … `DECRQM`），以 `EST_CSI_END` / `EST_CSI_NUMS` 收尾。这些枚举目前主要用于预留编号与自描述，序列字符串仍由下面的宏生成。
+`EST_CSI_TYPE` 从 `EST_CSI`（`0x200`）开始逐个列出所有 CSI 类型（`CUU`、`CUD` … `DECRQM`），以 `EST_CSI_END` / `EST_CSI_COUNT` 收尾。这些枚举目前主要用于预留编号与自描述，序列字符串仍由下面的宏生成。
 
 ### CSI 序列
 

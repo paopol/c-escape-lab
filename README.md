@@ -224,7 +224,7 @@ each sequence family using `EST_BLOCK_OFFSET = 0x0100`:
 | PM | `ESTO_PM` | `EST_PM` | `0x800` |
 
 `EST_CSI_TYPE` lists every CSI type (`CUU`, `CUD` … `DECRQM`) starting from `EST_CSI`
-(`0x200`), ending with `EST_CSI_END` / `EST_CSI_NUMS`. These enums currently reserve numbers
+(`0x200`), ending with `EST_CSI_END` / `EST_CSI_COUNT`. These enums currently reserve numbers
 and self-describe the types; the sequence strings are still produced by the macros below.
 
 ### CSI sequences

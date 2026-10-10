@@ -286,7 +286,7 @@ enum ESCAPE_SEQUENCE_TYPE_ORDER
     ESTO_PM,
 
     ESTO_END,
-    ESTO_NUMS = (ESTO_END - 1 - ESTO_BEGIN),
+    ESTO_COUNT = (ESTO_END - 1 - ESTO_BEGIN),
 };
 
 enum ESCAPE_SEQUENCE_TYPE
@@ -303,7 +303,7 @@ enum ESCAPE_SEQUENCE_TYPE
     EST_PM  = ESTO_PM  * EST_BLOCK_OFFSET,
 
     EST_END,
-    EST_NUMS = ESTO_NUMS
+    EST_COUNT = ESTO_COUNT
 };
 
 
@@ -464,7 +464,7 @@ enum EST_CSI_TYPE
 
     /* NUMBER OF CSI SUPPORTED */
 
-    EST_CSI_NUMS = (EST_CSI_END - 1 - EST_CSI_BEGIN)
+    EST_CSI_COUNT = (EST_CSI_END - 1 - EST_CSI_BEGIN)
 };
 
 /* ============================================================================
